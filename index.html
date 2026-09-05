@@ -6,236 +6,192 @@
 <title>团购预售</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f6fa;color:#2c3e50}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f6fa;color:#2c3e50;line-height:1.6}
 .container{max-width:900px;margin:0 auto;padding:20px}
 header{background:#fff;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1);margin-bottom:30px;text-align:center}
 h1{color:#2d3436;font-size:2rem}
-h2{color:#2d3436;margin-bottom:20px;text-align:center}
-.product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:30px}
-.product-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 5px 15px rgba(0,0,0,.1);text-align:center}
-.product-icon{font-size:3rem;margin-bottom:10px}
-.product-name{font-size:1.2rem;margin-bottom:8px;color:#2d3436}
-.product-price{color:#e76f51;font-weight:bold;font-size:1.3rem;margin-bottom:8px}
-.product-desc{color:#636e72;font-size:.85rem;margin-bottom:15px}
-.qty-selector{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
-.qty-btn{width:36px;height:36px;border:2px solid #ddd;background:#fff;border-radius:8px;cursor:pointer;font-size:1.3rem;font-weight:bold;display:flex;align-items:center;justify-content:center}
-.qty-btn:hover{background:#f0f0f0;border-color:#e76f51}
-.qty-num{font-size:1.2rem;font-weight:bold;min-width:30px;text-align:center}
+h2{color:#2d3436;margin:20px 0;text-align:center}
+.products{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:30px}
+.product{background:#fff;border-radius:10px;padding:20px;box-shadow:0 5px 15px rgba(0,0,0,.1);text-align:center}
+.product .icon{font-size:3rem;margin-bottom:10px}
+.product .name{font-size:1.2rem;font-weight:bold;margin-bottom:5px}
+.product .price{color:#e76f51;font-weight:bold;font-size:1.3rem;margin-bottom:5px}
+.product .desc{color:#636e72;font-size:.85rem;margin-bottom:15px}
+.qty-row{display:flex;align-items:center;justify-content:center;gap:15px;margin-bottom:10px}
+.qty-row button{width:40px;height:40px;border:2px solid #ddd;background:#fff;border-radius:8px;cursor:pointer;font-size:1.5rem;font-weight:bold}
+.qty-row button:hover{background:#e76f51;color:#fff;border-color:#e76f51}
+.qty-row span{font-size:1.5rem;font-weight:bold;min-width:40px;text-align:center}
 .add-btn{width:100%;padding:12px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;font-weight:bold}
 .add-btn:hover{background:#219a52}
-.cart-section{background:#fff;padding:25px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:30px}
-.cart-empty{text-align:center;color:#b2bec3;padding:20px;font-size:1.1rem}
-.cart-item{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid #eee}
-.cart-item:last-child{border-bottom:none}
-.cart-item-name{font-weight:bold;font-size:1.1rem}
-.cart-item-price{color:#e76f51;font-size:1.1rem}
-.cart-item-qty{display:flex;align-items:center;gap:8px}
-.qty-btn-sm{width:32px;height:32px;border:2px solid #ddd;background:#fff;border-radius:8px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center}
-.qty-btn-sm:hover{background:#f0f0f0}
-.qty-num-sm{font-weight:bold;min-width:25px;text-align:center}
-.del-btn{background:#ff7675;color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:.85rem}
-.del-btn:hover{background:#d63031}
-.cart-total{text-align:right;font-size:1.3rem;font-weight:bold;padding-top:15px;border-top:2px solid #eee;margin-top:15px;color:#e76f51}
-.form-section{background:#fff;padding:30px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.1)}
-.form-group{margin-bottom:20px}
-.form-group label{display:block;margin-bottom:8px;font-weight:500;color:#2d3436}
-.form-group input,.form-group textarea{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:1rem}
-.form-group input:focus,.form-group textarea:focus{outline:none;border-color:#e76f51}
-.form-group textarea{min-height:80px;resize:vertical}
-.submit-btn{width:100%;padding:15px;background:#e76f51;color:#fff;border:none;border-radius:8px;font-size:1.1rem;cursor:pointer;font-weight:bold}
-.submit-btn:hover{background:#d65a40}
-.submit-btn:disabled{background:#b2bec3;cursor:not-allowed}
-.status-msg{padding:15px;border-radius:8px;margin:15px 0;text-align:center;display:none}
-.status-msg.show{display:block}
-.status-msg.success{background:#d5f5e3;color:#27ae60}
-.status-msg.error{background:#fadbd8;color:#c0392b}
+.cart{background:#fff;padding:25px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:30px}
+.empty{text-align:center;color:#b2bec3;padding:20px}
+.item{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid #eee}
+.item-info .item-name{font-weight:bold;font-size:1.1rem}
+.item-info .item-sub{color:#e76f51;font-size:1rem}
+.item-ops{display:flex;align-items:center;gap:10px}
+.item-ops button{width:35px;height:35px;border:2px solid #ddd;background:#fff;border-radius:8px;cursor:pointer;font-size:1.2rem}
+.item-ops button:hover{background:#e76f51;color:#fff;border-color:#e76f51}
+.item-ops .num{font-weight:bold;font-size:1.1rem;min-width:30px;text-align:center}
+.item-ops .del{background:#ff7675;color:#fff;border:none;padding:8px 15px;border-radius:8px}
+.item-ops .del:hover{background:#d63031}
+.total{text-align:right;font-size:1.5rem;font-weight:bold;padding-top:15px;border-top:2px solid #eee;margin-top:15px;color:#e76f51}
+.form{background:#fff;padding:30px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.1)}
+.field{margin-bottom:20px}
+.field label{display:block;margin-bottom:8px;font-weight:500}
+.field input,.field textarea{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:1rem}
+.field input:focus,.field textarea:focus{outline:none;border-color:#e76f51}
+.field textarea{min-height:80px;resize:vertical}
+.submit{width:100%;padding:15px;background:#e76f51;color:#fff;border:none;border-radius:8px;font-size:1.2rem;cursor:pointer;font-weight:bold}
+.submit:hover{background:#d65a40}
+.msg{padding:15px;border-radius:8px;margin:15px 0;text-align:center;display:none}
+.msg.show{display:block}
+.msg.ok{background:#d5f5e3;color:#27ae60}
+.msg.err{background:#fadbd8;color:#c0392b}
 </style>
 </head>
 <body>
 <div class="container">
 <header><h1>团购预售</h1></header>
-
 <h2>选择产品</h2>
-<div class="product-grid">
-<div class="product-card">
-<div class="product-icon">📦</div>
-<div class="product-name">经典团购套餐</div>
-<div class="product-price">¥199</div>
-<div class="product-desc">限时优惠，专为团购设计的基础套餐</div>
-<div class="qty-selector">
-<button class="qty-btn" onclick="selectQty(1,-1)">−</button>
-<span class="qty-num" id="qty1">0</span>
-<button class="qty-btn" onclick="selectQty(1,1)">+</button>
+<div class="products">
+<div class="product">
+<div class="icon">📦</div>
+<div class="name">经典团购套餐</div>
+<div class="price">¥199</div>
+<div class="desc">限时优惠，专为团购设计的基础套餐</div>
+<div class="qty-row">
+<button onclick="sel(1,-1)">−</button>
+<span id="q1">0</span>
+<button onclick="sel(1,1)">+</button>
 </div>
-<button class="add-btn" onclick="addToCart(1,'经典团购套餐',199)">加入预订</button>
+<button class="add-btn" onclick="add(1,'经典团购套餐',199)">加入预订</button>
 </div>
-<div class="product-card">
-<div class="product-icon">🎁</div>
-<div class="product-name">尊享团购套餐</div>
-<div class="product-price">¥299</div>
-<div class="product-desc">高端团购套餐，包含额外福利</div>
-<div class="qty-selector">
-<button class="qty-btn" onclick="selectQty(2,-1)">−</button>
-<span class="qty-num" id="qty2">0</span>
-<button class="qty-btn" onclick="selectQty(2,1)">+</button>
+<div class="product">
+<div class="icon">🎁</div>
+<div class="name">尊享团购套餐</div>
+<div class="price">¥299</div>
+<div class="desc">高端团购套餐，包含额外福利</div>
+<div class="qty-row">
+<button onclick="sel(2,-1)">−</button>
+<span id="q2">0</span>
+<button onclick="sel(2,1)">+</button>
 </div>
-<button class="add-btn" onclick="addToCart(2,'尊享团购套餐',299)">加入预订</button>
+<button class="add-btn" onclick="add(2,'尊享团购套餐',299)">加入预订</button>
 </div>
-<div class="product-card">
-<div class="product-icon">👑</div>
-<div class="product-name">终极团购套餐</div>
-<div class="product-price">¥399</div>
-<div class="product-desc">完整团购套餐，所有功能包含</div>
-<div class="qty-selector">
-<button class="qty-btn" onclick="selectQty(3,-1)">−</button>
-<span class="qty-num" id="qty3">0</span>
-<button class="qty-btn" onclick="selectQty(3,1)">+</button>
+<div class="product">
+<div class="icon">👑</div>
+<div class="name">终极团购套餐</div>
+<div class="price">¥399</div>
+<div class="desc">完整团购套餐，所有功能包含</div>
+<div class="qty-row">
+<button onclick="sel(3,-1)">−</button>
+<span id="q3">0</span>
+<button onclick="sel(3,1)">+</button>
 </div>
-<button class="add-btn" onclick="addToCart(3,'终极团购套餐',399)">加入预订</button>
+<button class="add-btn" onclick="add(3,'终极团购套餐',399)">加入预订</button>
 </div>
 </div>
 
-<div class="cart-section">
+<div class="cart">
 <h2>确认购物车</h2>
-<div id="cartContent"><div class="cart-empty">购物车为空，请先选择产品</div></div>
+<div id="cc"><div class="empty">购物车为空，请先选择产品</div></div>
 </div>
 
-<div class="form-section">
+<div class="form">
 <h2>填写收货信息</h2>
-<form id="orderForm">
-<div class="form-group"><label>姓名 *</label><input type="text" id="name" required placeholder="请输入收货人姓名"></div>
-<div class="form-group"><label>电话 *</label><input type="tel" id="phone" required placeholder="请输入联系电话"></div>
-<div class="form-group"><label>邮箱 *</label><input type="email" id="email" required placeholder="请输入邮箱地址"></div>
-<div class="form-group"><label>收货地址 *</label><input type="text" id="address" required placeholder="请输入详细收货地址"></div>
-<div class="form-group"><label>留言</label><textarea id="message" placeholder="其他要求或备注"></textarea></div>
-<button type="submit" class="submit-btn" id="submitBtn">提交订单</button>
+<form id="of">
+<div class="field"><label>姓名 *</label><input type="text" id="n" required placeholder="请输入收货人姓名"></div>
+<div class="field"><label>电话 *</label><input type="tel" id="p" required placeholder="请输入联系电话"></div>
+<div class="field"><label>邮箱 *</label><input type="email" id="e" required placeholder="请输入邮箱地址"></div>
+<div class="field"><label>收货地址 *</label><input type="text" id="a" required placeholder="请输入详细收货地址"></div>
+<div class="field"><label>留言</label><textarea id="m" placeholder="其他要求或备注"></textarea></div>
+<button type="submit" class="submit" id="sb">提交订单</button>
 </form>
-<div id="statusMessage" class="status-msg"></div>
+<div id="sm" class="msg"></div>
 </div>
 </div>
 
 <script>
-var cart=[];
-var qtySelect={1:0,2:0,3:0};
+var C=[];
+var S={1:0,2:0,3:0};
 var _t=['lianchuzhong','tg-new','ghp_','u6IeDy8paXCTB86A5L','maoxyC1txOa923pNi1'];
-var CONFIG={owner:_t[0],repo:_t[1],token:_t[2]+_t[3]+_t[4]};
+var K={o:_t[0],r:_t[1],t:_t[2]+_t[3]+_t[4]};
 
-function selectQty(id,delta){
-qtySelect[id]+=delta;
-if(qtySelect[id]<0)qtySelect[id]=0;
-document.getElementById('qty'+id).textContent=qtySelect[id]
-}
+function sel(id,d){S[id]+=d;if(S[id]<0)S[id]=0;document.getElementById('q'+id).textContent=S[id]}
 
-function addToCart(id,name,price){
-var q=qtySelect[id];
-if(q<=0)q=1;
-for(var i=0;i<cart.length;i++){
-if(cart[i].id===id){cart[i].qty+=q;saveCart();renderCart();qtySelect[id]=0;document.getElementById('qty'+id).textContent=0;alert('已加入: '+name+' x'+q);return}
+function add(id,name,price){
+var q=S[id];if(q<=0)q=1;
+for(var i=0;i<C.length;i++){
+if(C[i].id===id){C[i].q+=q;save();draw();S[id]=0;document.getElementById('q'+id).textContent=0;alert('已加入: '+name+' x'+q);return}
 }
-cart.push({id:id,name:name,price:price,qty:q});
-saveCart();renderCart();
-qtySelect[id]=0;document.getElementById('qty'+id).textContent=0;
+C.push({id:id,name:name,price:price,q:q});
+save();draw();
+S[id]=0;document.getElementById('q'+id).textContent=0;
 alert('已加入: '+name+' x'+q)
 }
 
-function changeQty(id,delta){
-for(var i=0;i<cart.length;i++){
-if(cart[i].id===id){
-cart[i].qty+=delta;
-if(cart[i].qty<=0)cart.splice(i,1);
-saveCart();renderCart();return
-}
+function cq(id,d){
+for(var i=0;i<C.length;i++){
+if(C[i].id===id){C[i].q+=d;if(C[i].q<=0)C.splice(i,1);save();draw();return}
 }
 }
 
-function removeItem(id){
-for(var i=0;i<cart.length;i++){
-if(cart[i].id===id){cart.splice(i,1);saveCart();renderCart();return}
+function di(id){for(var i=0;i<C.length;i++){if(C[i].id===id){C.splice(i,1);save();draw();return}}}
+
+function draw(){
+var el=document.getElementById('cc');
+if(C.length===0){el.innerHTML='<div class="empty">购物车为空，请先选择产品</div>';return}
+var h='';var t=0;
+for(var i=0;i<C.length;i++){
+var x=C[i];var s=x.price*x.q;t+=s;
+h+='<div class="item">';
+h+='<div class="item-info"><div class="item-name">'+x.name+'</div><div class="item-sub">¥'+x.price+' × '+x.q+' = ¥'+s+'</div></div>';
+h+='<div class="item-ops">';
+h+='<button onclick="cq('+x.id+',-1)">−</button>';
+h+='<span class="num">'+x.q+'</span>';
+h+='<button onclick="cq('+x.id+',1)">+</button>';
+h+='<button class="del" onclick="di('+x.id+')">删除</button>';
+h+='</div></div>'
 }
+h+='<div class="total">合计: ¥'+t+'</div>';
+el.innerHTML=h
 }
 
-function renderCart(){
-var el=document.getElementById('cartContent');
-if(cart.length===0){el.innerHTML='<div class="cart-empty">购物车为空，请先选择产品</div>';return}
-var html='';var total=0;
-for(var i=0;i<cart.length;i++){
-var item=cart[i];var sub=item.price*item.qty;total+=sub;
-html+='<div class="cart-item">';
-html+='<div><div class="cart-item-name">'+item.name+'</div><div class="cart-item-price">¥'+item.price+' x '+item.qty+' = ¥'+sub+'</div></div>';
-html+='<div style="display:flex;align-items:center;gap:10px">';
-html+='<div class="cart-item-qty">';
-html+='<button class="qty-btn-sm" onclick="changeQty('+item.id+',-1)">−</button>';
-html+='<span class="qty-num-sm">'+item.qty+'</span>';
-html+='<button class="qty-btn-sm" onclick="changeQty('+item.id+',1)">+</button>';
-html+='</div><button class="del-btn" onclick="removeItem('+item.id+')">删除</button></div></div>'
-}
-html+='<div class="cart-total">合计: ¥'+total+'</div>';
-el.innerHTML=html
+function msg(txt,cls){
+var el=document.getElementById('sm');
+el.textContent=txt;el.className='msg show '+cls;
+setTimeout(function(){el.className='msg'},5000)
 }
 
-function showStatus(msg,type){
-var el=document.getElementById('statusMessage');
-el.textContent=msg;el.className='status-msg show '+type;
-setTimeout(function(){el.className='status-msg'},5000)
-}
+function ld(){try{var s=localStorage.getItem('tg');if(s)C=JSON.parse(s)}catch(e){}draw()}
+function save(){try{localStorage.setItem('tg',JSON.stringify(C))}catch(e){}}
 
-function loadCart(){
-try{var s=localStorage.getItem('tgCart');if(s)cart=JSON.parse(s)}catch(e){}
-renderCart()
-}
-
-function saveCart(){try{localStorage.setItem('tgCart',JSON.stringify(cart))}catch(e){}}
-
-document.getElementById('orderForm').onsubmit=function(e){
+document.getElementById('of').onsubmit=function(e){
 e.preventDefault();
-var name=document.getElementById('name').value.trim();
-var phone=document.getElementById('phone').value.trim();
-var email=document.getElementById('email').value.trim();
-var address=document.getElementById('address').value.trim();
-var message=document.getElementById('message').value.trim();
-
-if(!name||!phone||!email||!address){showStatus('请填写所有必填字段','error');return}
-if(cart.length===0){showStatus('请先加入至少一个预订产品','error');return}
-
-var btn=document.getElementById('submitBtn');
-btn.textContent='提交中...';btn.disabled=true;
-
-var cartText='';var total=0;
-for(var i=0;i<cart.length;i++){
-var sub=cart[i].price*cart[i].qty;total+=sub;
-cartText+='  - '+cart[i].name+' ¥'+cart[i].price+' x'+cart[i].qty+' = ¥'+sub+'\n';
-}
-cartText+='  合计: ¥'+total;
-
-var body='**预订人信息:**\n';
-body+='  - 姓名: '+name+'\n';
-body+='  - 电话: '+phone+'\n';
-body+='  - 邮箱: '+email+'\n';
-body+='  - 地址: '+address+'\n';
-body+='  - 留言: '+(message||'无')+'\n\n';
-body+='**预订产品:**\n'+cartText+'\n\n';
-body+='**提交时间:** '+new Date().toLocaleString();
-
-fetch('https://api.github.com/repos/'+CONFIG.owner+'/'+CONFIG.repo+'/issues',{
+var n=document.getElementById('n').value.trim();
+var p=document.getElementById('p').value.trim();
+var em=document.getElementById('e').value.trim();
+var ad=document.getElementById('a').value.trim();
+var ms=document.getElementById('m').value.trim();
+if(!n||!p||!em||!ad){msg('请填写所有必填字段','err');return}
+if(C.length===0){msg('请先加入至少一个预订产品','err');return}
+var b=document.getElementById('sb');b.textContent='提交中...';b.disabled=true;
+var ct='';var tot=0;
+for(var i=0;i<C.length;i++){var s=C[i].price*C[i].q;tot+=s;ct+='  - '+C[i].name+' ¥'+C[i].price+' ×'+C[i].q+' = ¥'+s+'\n'}
+ct+='  合计: ¥'+tot;
+var bd='**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+em+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+ct+'\n\n**提交时间:** '+new Date().toLocaleString();
+fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/issues',{
 method:'POST',
-headers:{'Authorization':'token '+CONFIG.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-body:JSON.stringify({title:'新团购预售: '+name+' - '+phone,body:body})
+headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+body:JSON.stringify({title:'新团购预售: '+n+' - '+p,body:bd})
 }).then(function(r){
-if(r.ok){
-showStatus('预订提交成功! 我们将尽快联系您.','success');
-document.getElementById('orderForm').reset();
-cart=[];saveCart();renderCart();
-}else{
-r.json().then(function(d){showStatus('提交失败: '+d.message,'error')})
-}
-btn.textContent='提交订单';btn.disabled=false
-}).catch(function(err){
-showStatus('网络错误: '+err.message,'error');
-btn.textContent='提交订单';btn.disabled=false
-})
+if(r.ok){msg('预订提交成功! 我们将尽快联系您.','ok');document.getElementById('of').reset();C=[];save();draw()}
+else r.json().then(function(d){msg('提交失败: '+d.message,'err')});
+b.textContent='提交订单';b.disabled=false
+}).catch(function(err){msg('网络错误: '+err.message,'err');b.textContent='提交订单';b.disabled=false})
 };
 
-loadCart();
+ld();
 </script>
 </body>
 </html>
