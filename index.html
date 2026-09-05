@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>团购预售</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2d3436;
+            --secondary: #636e72;
+            --accent: #e76f51;
+            --background: #f5f6fa;
+            --text: #2c3e50;
+            --light: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-name {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .product-price {
+            color: var(--accent);
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .product-desc {
+            color: var(--secondary);
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            min-height: 40px;
+        }
+
+        .cart-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .cart-btn:hover {
+            background-color: #d65a40;
+        }
+
+        .contact-form {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #1a252f;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success { background-color: #d5f5e3; color: #27ae60; }
+        .error { background-color: #fadbd8; color: #c0392b; }
+
+        .nav-links a {
+            color: var(--secondary);
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9rem;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            h1 {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>团购预售</h1>
+                <div class="nav-links">
+                    <a href="#products">产品</a>
+                    <a href="#contact">联系</a>
+                </div>
+            </div>
+        </header>
+
+        <section id="products" class="product-grid">
+            <!-- Products will be loaded by JavaScript -->
+        </section>
+
+        <section id="contact" class="contact-form">
+            <h2>提交预订信息</h2>
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="name">姓名</label>
+                    <input type="text" id="name" required placeholder="请输入您的姓名">
+                </div>
+                <div class="form-group">
+                    <label for="phone">电话</label>
+                    <input type="tel" id="phone" required placeholder="请输入联系电话">
+                </div>
+                <div class="form-group">
+                    <label for="email">邮箱</label>
+                    <input type="email" id="email" required placeholder="请输入邮箱地址">
+                </div>
+                <div class="form-group">
+                    <label for="message">其他留言</label>
+                    <textarea id="message" placeholder="在这里留下任何特殊要求或备注"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">提交预订</button>
+            </form>
+            <div id="statusMessage" class="status-message"></div>
+        </section>
+    </div>
+
+    <script>
+        // Product data - in a real scenario, this would come from an API or CMS
+        const products = [
+            {
+                id: 1,
+                name: "经典团购套餐",
+                price: "¥199",
+                desc: "限时优惠，专为团购设计的基础套餐",
+                image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCI+PCNtZXRhVG9wID48L21ldHRhbD48PC9zdmc+"
+            },
+            {
+                id: 2,
+                name: "尊享团购套餐",
+                price: "¥299",
+                desc: "高端团购套餐，包含额外福利",
+                image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCI+PCNtZXRhVG9wID48L21ldHRhbD48PC9zdmc+"
+            },
+            {
+                id: 3,
+                name: "终极团购套餐",
+                price: "¥399",
+                desc: "完整团购套餐，所有功能包含",
+                image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCI+PCNtZXRhVG9wID48L21ldHRhbD48PC9zdmc+"
+            }
+        ];
+
+        // Render products
+        function renderProducts() {
+            const grid = document.querySelector('.product-grid');
+            if (!grid) return;
+            
+            grid.innerHTML = products.map((product, index) => `
+                <div class="product-card" data-id="${product.id}">
+                    <div class="product-image">
+                        ${product.image}
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <div class="product-price">${product.price}</div>
+                        <p class="product-desc">${product.desc}</p>
+                        <button class="cart-btn" onclick="addToCart(${product.id})">加入预订</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add to cart functionality
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            // Get current cart from localStorage or initialize
+            let cart = JSON.parse(localStorage.getItem('tgCart')) || [];
+            
+            // Check if product already in cart
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+
+            // Save to localStorage
+            localStorage.setItem('tgCart', JSON.stringify(cart));
+
+            // Update cart count badge
+            updateCartBadge();
+
+            showStatus('产品已加入预订车', 'success');
+        }
+
+        // Update cart badge
+        function updateCartBadge() {
+            const cart = JSON.parse(localStorage.getItem('tgCart')) || [];
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const badge = document.querySelector('.cart-badge');
+            if (badge) {
+                badge.textContent = count;
+            }
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            if (!statusDiv) return;
+
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+            statusDiv.style.display = 'block';
+
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Handle form submission
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const message = document.getElementById('message').value.trim();
+
+            // Validate form
+            if (!name || !phone || !email) {
+                showStatus('请填写所有必填字段', 'error');
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = this.querySelector('.submit-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '提交中...';
+            submitBtn.disabled = true;
+
+            try {
+                // Prepare form data
+                const formData = {
+                    name,
+                    phone,
+                    email,
+                    message,
+                    cart: JSON.parse(localStorage.getItem('tgCart')) || [],
+                    timestamp: new Date().toISOString()
+                };
+
+                // Submit to GitHub Issues
+                const result = await submitToGitHub(formData);
+                
+                if (result) {
+                    showStatus('预订提交成功！我们将尽快联系您。', 'success');
+                    this.reset();
+                    localStorage.removeItem('tgCart');
+                    updateCartBadge();
+                } else {
+                    showStatus('提交失败，请稍后重试', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('提交过程中发生错误', 'error');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Submit form data to GitHub Issues
+        async function submitToGitHub(formData) {
+            const repo = 'tg-new';
+            const owner = 'lianchuzhong';
+            const token = 'YOUR_GITHUB_TOKEN_HERE'; // 请替换为您的 GitHub Token
+
+            const issueTitle = `新团购预售：${formData.name}`;
+            const issueBody = `
+**预订人信息:**
+- 姓名: ${formData.name}
+- 电话: ${formData.phone}
+- 邮箱: ${formData.email}
+- 留言: ${formData.message || '无'}
+
+**预订产品:**
+${formData.cart.map(item => `- ${item.name} (${item.price}) x${item.quantity}`).join('\n')}
+
+**提交时间:** ${new Date(formData.timestamp).toLocaleString()}
+            `.trim();
+
+            const apiUrl = `https://api.github.com/repos/${owner}/${repo}/issues`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: issueTitle,
+                    body: issueBody
+                })
+            });
+
+            if (response.ok) {
+                const issue = await response.json();
+                console.log('Issue created:', issue.html_url);
+                return true;
+            } else {
+                const errorData = await response.json();
+                console.error('GitHub API Error:', errorData);
+                return false;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            updateCartBadge();
+        });
+    </script>
+</body>
+</html>
