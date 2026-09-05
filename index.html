@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>鍥㈣喘棰勫敭</title>
+    <title>团购预售</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f6fa; color: #2c3e50; }
@@ -41,58 +41,58 @@
 <body>
     <div class="container">
         <header>
-            <h1>鍥㈣喘棰勫敭</h1>
+            <h1>团购预售</h1>
         </header>
 
         <div class="cart-info">
-            <div class="cart-count" id="cartCount">璐墿杞︼細0 浠跺晢鍝?/div>
+            <div class="cart-count" id="cartCount">购物车：0 件商品</div>
             <div class="cart-items" id="cartItems"></div>
         </div>
 
         <div class="product-grid" id="productGrid">
             <div class="product-card">
-                <div class="product-icon">馃摝</div>
-                <h3 class="product-name">缁忓吀鍥㈣喘濂楅</h3>
-                <div class="product-price">楼199</div>
-                <p class="product-desc">闄愭椂浼樻儬锛屼笓涓哄洟璐璁＄殑鍩虹濂楅</p>
-                <button class="cart-btn" onclick="addToCart(1, '缁忓吀鍥㈣喘濂楅', '楼199')">鍔犲叆棰勮</button>
+                <div class="product-icon">📦</div>
+                <h3 class="product-name">经典团购套餐</h3>
+                <div class="product-price">¥199</div>
+                <p class="product-desc">限时优惠，专为团购设计的基础套餐</p>
+                <button class="cart-btn" onclick="addToCart(1, '经典团购套餐', '¥199')">加入预订</button>
             </div>
             <div class="product-card">
-                <div class="product-icon">馃巵</div>
-                <h3 class="product-name">灏婁韩鍥㈣喘濂楅</h3>
-                <div class="product-price">楼299</div>
-                <p class="product-desc">楂樼鍥㈣喘濂楅锛屽寘鍚澶栫鍒?/p>
-                <button class="cart-btn" onclick="addToCart(2, '灏婁韩鍥㈣喘濂楅', '楼299')">鍔犲叆棰勮</button>
+                <div class="product-icon">🎁</div>
+                <h3 class="product-name">尊享团购套餐</h3>
+                <div class="product-price">¥299</div>
+                <p class="product-desc">高端团购套餐，包含额外福利</p>
+                <button class="cart-btn" onclick="addToCart(2, '尊享团购套餐', '¥299')">加入预订</button>
             </div>
             <div class="product-card">
-                <div class="product-icon">馃憫</div>
-                <h3 class="product-name">缁堟瀬鍥㈣喘濂楅</h3>
-                <div class="product-price">楼399</div>
-                <p class="product-desc">瀹屾暣鍥㈣喘濂楅锛屾墍鏈夊姛鑳藉寘鍚?/p>
-                <button class="cart-btn" onclick="addToCart(3, '缁堟瀬鍥㈣喘濂楅', '楼399')">鍔犲叆棰勮</button>
+                <div class="product-icon">👑</div>
+                <h3 class="product-name">终极团购套餐</h3>
+                <div class="product-price">¥399</div>
+                <p class="product-desc">完整团购套餐，所有功能包含</p>
+                <button class="cart-btn" onclick="addToCart(3, '终极团购套餐', '¥399')">加入预订</button>
             </div>
         </div>
 
         <section class="contact-form">
-            <h2 style="text-align:center;margin-bottom:20px;">鎻愪氦棰勮淇℃伅</h2>
+            <h2 style="text-align:center;margin-bottom:20px;">提交预订信息</h2>
             <form id="contactForm">
                 <div class="form-group">
-                    <label for="name">濮撳悕 *</label>
-                    <input type="text" id="name" required placeholder="璇疯緭鍏ユ偍鐨勫鍚?>
+                    <label for="name">姓名 *</label>
+                    <input type="text" id="name" required placeholder="请输入您的姓名">
                 </div>
                 <div class="form-group">
-                    <label for="phone">鐢佃瘽 *</label>
-                    <input type="tel" id="phone" required placeholder="璇疯緭鍏ヨ仈绯荤數璇?>
+                    <label for="phone">电话 *</label>
+                    <input type="tel" id="phone" required placeholder="请输入联系电话">
                 </div>
                 <div class="form-group">
-                    <label for="email">閭 *</label>
-                    <input type="email" id="email" required placeholder="璇疯緭鍏ラ偖绠卞湴鍧€">
+                    <label for="email">邮箱 *</label>
+                    <input type="email" id="email" required placeholder="请输入邮箱地址">
                 </div>
                 <div class="form-group">
-                    <label for="message">鍏朵粬鐣欒█</label>
-                    <textarea id="message" placeholder="鍦ㄨ繖閲岀暀涓嬩换浣曠壒娈婅姹傛垨澶囨敞"></textarea>
+                    <label for="message">其他留言</label>
+                    <textarea id="message" placeholder="在这里留下任何特殊要求或备注"></textarea>
                 </div>
-                <button type="submit" class="submit-btn" id="submitBtn">鎻愪氦棰勮</button>
+                <button type="submit" class="submit-btn" id="submitBtn">提交预订</button>
             </form>
             <div id="statusMessage" class="status-message"></div>
         </section>
@@ -121,7 +121,7 @@
             } catch(e) {}
 
             updateCartDisplay();
-            alert('宸插姞鍏ラ璁㈣溅锛? + name);
+            alert('已加入预订车：' + name);
         }
 
         function removeFromCart(id) {
@@ -148,7 +148,7 @@
             for (var i = 0; i < cart.length; i++) {
                 total += cart[i].quantity;
             }
-            document.getElementById('cartCount').textContent = '璐墿杞︼細' + total + ' 浠跺晢鍝?;
+            document.getElementById('cartCount').textContent = '购物车：' + total + ' 件商品';
 
             var itemsHtml = '';
             for (var i = 0; i < cart.length; i++) {
@@ -175,36 +175,36 @@
             var message = document.getElementById('message').value.trim();
 
             if (!name || !phone || !email) {
-                showStatus('璇峰～鍐欐墍鏈夊繀濉瓧娈?, 'error');
+                showStatus('请填写所有必填字段', 'error');
                 return;
             }
 
             if (cart.length === 0) {
-                showStatus('璇峰厛鍔犲叆鑷冲皯涓€涓璁骇鍝?, 'error');
+                showStatus('请先加入至少一个预订产品', 'error');
                 return;
             }
 
             var submitBtn = document.getElementById('submitBtn');
-            submitBtn.textContent = '鎻愪氦涓?..';
+            submitBtn.textContent = '提交中...';
             submitBtn.disabled = true;
 
             var repo = 'tg-new';
             var owner = 'lianchuzhong';
             var token = 'YOUR_GITHUB_TOKEN_HERE';
 
-            var issueTitle = '鏂板洟璐鍞細' + name;
+            var issueTitle = '新团购预售：' + name;
             var cartText = '';
             for (var i = 0; i < cart.length; i++) {
                 cartText += '- ' + cart[i].name + ' (' + cart[i].price + ') x' + cart[i].quantity + '\n';
             }
 
-            var issueBody = '**棰勮浜轰俊鎭?**\n';
-            issueBody += '- 濮撳悕: ' + name + '\n';
-            issueBody += '- 鐢佃瘽: ' + phone + '\n';
-            issueBody += '- 閭: ' + email + '\n';
-            issueBody += '- 鐣欒█: ' + (message || '鏃?) + '\n\n';
-            issueBody += '**棰勮浜у搧:**\n' + cartText + '\n';
-            issueBody += '**鎻愪氦鏃堕棿:** ' + new Date().toLocaleString();
+            var issueBody = '**预订人信息:**\n';
+            issueBody += '- 姓名: ' + name + '\n';
+            issueBody += '- 电话: ' + phone + '\n';
+            issueBody += '- 邮箱: ' + email + '\n';
+            issueBody += '- 留言: ' + (message || '无') + '\n\n';
+            issueBody += '**预订产品:**\n' + cartText + '\n';
+            issueBody += '**提交时间:** ' + new Date().toLocaleString();
 
             var apiUrl = 'https://api.github.com/repos/' + owner + '/' + repo + '/issues';
 
@@ -221,19 +221,19 @@
                 })
             }).then(function(response) {
                 if (response.ok) {
-                    showStatus('棰勮鎻愪氦鎴愬姛锛佹垜浠皢灏藉揩鑱旂郴鎮ㄣ€?, 'success');
+                    showStatus('预订提交成功！我们将尽快联系您。', 'success');
                     document.getElementById('contactForm').reset();
                     cart = [];
                     try { localStorage.removeItem('tgCart'); } catch(e) {}
                     updateCartDisplay();
                 } else {
-                    showStatus('鎻愪氦澶辫触锛岃绋嶅悗閲嶈瘯', 'error');
+                    showStatus('提交失败，请稍后重试', 'error');
                 }
-                submitBtn.textContent = '鎻愪氦棰勮';
+                submitBtn.textContent = '提交预订';
                 submitBtn.disabled = false;
             }).catch(function(err) {
-                showStatus('鎻愪氦杩囩▼涓彂鐢熼敊璇細' + err.message, 'error');
-                submitBtn.textContent = '鎻愪氦棰勮';
+                showStatus('提交过程中发生错误：' + err.message, 'error');
+                submitBtn.textContent = '提交预订';
                 submitBtn.disabled = false;
             });
         };
