@@ -1,250 +1,222 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>团购预售</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f6fa; color: #2c3e50; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { background: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; text-align: center; }
-        h1 { color: #2d3436; font-size: 2rem; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .product-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; }
-        .product-icon { font-size: 4rem; margin-bottom: 15px; }
-        .product-name { font-size: 1.3rem; margin-bottom: 10px; color: #2d3436; }
-        .product-price { color: #e76f51; font-weight: bold; font-size: 1.5rem; margin-bottom: 10px; }
-        .product-desc { color: #636e72; font-size: 0.9rem; margin-bottom: 20px; }
-        .cart-btn { width: 100%; padding: 12px; background: #e76f51; color: white; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; }
-        .cart-btn:hover { background: #d65a40; }
-        .cart-btn:active { transform: scale(0.98); }
-        .contact-form { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
-        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
-        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #e76f51; }
-        .form-group textarea { min-height: 100px; resize: vertical; }
-        .submit-btn { width: 100%; padding: 15px; background: #2d3436; color: white; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; font-weight: 500; }
-        .submit-btn:hover { background: #1a252f; }
-        .submit-btn:disabled { background: #b2bec3; cursor: not-allowed; }
-        .status-message { padding: 15px; border-radius: 5px; margin: 20px 0; display: none; text-align: center; }
-        .success { background: #d5f5e3; color: #27ae60; display: block !important; }
-        .error { background: #fadbd8; color: #c0392b; display: block !important; }
-        .cart-info { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .cart-count { color: #e76f51; font-weight: bold; font-size: 1.2rem; }
-        .cart-items { margin-top: 10px; text-align: left; }
-        .cart-item { padding: 8px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .cart-item:last-child { border-bottom: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>团购预售</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#f5f6fa;color:#2c3e50}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+header{background:#fff;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1);margin-bottom:30px;text-align:center}
+h1{color:#2d3436;font-size:2rem}
+.cart-box{background:#fff;padding:20px;border-radius:10px;margin-bottom:30px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.cart-title{font-size:1.2rem;font-weight:bold;margin-bottom:10px;color:#e76f51}
+.cart-empty{color:#b2bec3;text-align:center;padding:10px}
+.cart-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+.cart-item:last-child{border-bottom:none}
+.cart-item-info{flex:1}
+.cart-item-name{font-weight:bold}
+.cart-item-price{color:#e76f51}
+.cart-item-qty{display:flex;align-items:center;gap:10px;margin:5px 0}
+.qty-btn{width:30px;height:30px;border:1px solid #ddd;background:#fff;border-radius:5px;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center}
+.qty-btn:hover{background:#f0f0f0}
+.qty-num{font-weight:bold;min-width:20px;text-align:center}
+.del-btn{background:#ff7675;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:0.8rem}
+.del-btn:hover{background:#d63031}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:40px}
+.product-card{background:#fff;border-radius:10px;padding:20px;box-shadow:0 5px 15px rgba(0,0,0,.1);text-align:center}
+.product-icon{font-size:4rem;margin-bottom:15px}
+.product-name{font-size:1.3rem;margin-bottom:10px;color:#2d3436}
+.product-price{color:#e76f51;font-weight:bold;font-size:1.5rem;margin-bottom:10px}
+.product-desc{color:#636e72;font-size:.9rem;margin-bottom:20px}
+.cart-btn{width:100%;padding:12px;background:#e76f51;color:#fff;border:none;border-radius:5px;font-size:1rem;cursor:pointer}
+.cart-btn:hover{background:#d65a40}
+.contact-form{background:#fff;padding:30px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.1);max-width:600px;margin:0 auto}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;margin-bottom:8px;font-weight:500}
+.form-group input,.form-group textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:5px;font-size:1rem}
+.form-group input:focus,.form-group textarea:focus{outline:none;border-color:#e76f51}
+.form-group textarea{min-height:100px;resize:vertical}
+.submit-btn{width:100%;padding:15px;background:#27ae60;color:#fff;border:none;border-radius:5px;font-size:1.1rem;cursor:pointer;font-weight:bold}
+.submit-btn:hover{background:#219a52}
+.submit-btn:disabled{background:#b2bec3;cursor:not-allowed}
+.status-msg{padding:15px;border-radius:5px;margin:15px 0;text-align:center;display:none}
+.status-msg.show{display:block}
+.status-msg.success{background:#d5f5e3;color:#27ae60}
+.status-msg.error{background:#fadbd8;color:#c0392b}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>团购预售</h1>
-        </header>
+<div class="container">
+<header><h1>团购预售</h1></header>
 
-        <div class="cart-info">
-            <div class="cart-count" id="cartCount">购物车：0 件商品</div>
-            <div class="cart-items" id="cartItems"></div>
-        </div>
+<div class="cart-box">
+<div class="cart-title">购物车</div>
+<div id="cartContent"><div class="cart-empty">购物车为空，请先选择产品</div></div>
+</div>
 
-        <div class="product-grid" id="productGrid">
-            <div class="product-card">
-                <div class="product-icon">📦</div>
-                <h3 class="product-name">经典团购套餐</h3>
-                <div class="product-price">¥199</div>
-                <p class="product-desc">限时优惠，专为团购设计的基础套餐</p>
-                <button class="cart-btn" onclick="addToCart(1, '经典团购套餐', '¥199')">加入预订</button>
-            </div>
-            <div class="product-card">
-                <div class="product-icon">🎁</div>
-                <h3 class="product-name">尊享团购套餐</h3>
-                <div class="product-price">¥299</div>
-                <p class="product-desc">高端团购套餐，包含额外福利</p>
-                <button class="cart-btn" onclick="addToCart(2, '尊享团购套餐', '¥299')">加入预订</button>
-            </div>
-            <div class="product-card">
-                <div class="product-icon">👑</div>
-                <h3 class="product-name">终极团购套餐</h3>
-                <div class="product-price">¥399</div>
-                <p class="product-desc">完整团购套餐，所有功能包含</p>
-                <button class="cart-btn" onclick="addToCart(3, '终极团购套餐', '¥399')">加入预订</button>
-            </div>
-        </div>
+<div class="product-grid">
+<div class="product-card">
+<div class="product-icon">📦</div>
+<h3 class="product-name">经典团购套餐</h3>
+<div class="product-price">¥199</div>
+<p class="product-desc">限时优惠，专为团购设计的基础套餐</p>
+<button class="cart-btn" onclick="addToCart(1,'经典团购套餐',199)">加入预订</button>
+</div>
+<div class="product-card">
+<div class="product-icon">🎁</div>
+<h3 class="product-name">尊享团购套餐</h3>
+<div class="product-price">¥299</div>
+<p class="product-desc">高端团购套餐，包含额外福利</p>
+<button class="cart-btn" onclick="addToCart(2,'尊享团购套餐',299)">加入预订</button>
+</div>
+<div class="product-card">
+<div class="product-icon">👑</div>
+<h3 class="product-name">终极团购套餐</h3>
+<div class="product-price">¥399</div>
+<p class="product-desc">完整团购套餐，所有功能包含</p>
+<button class="cart-btn" onclick="addToCart(3,'终极团购套餐',399)">加入预订</button>
+</div>
+</div>
 
-        <section class="contact-form">
-            <h2 style="text-align:center;margin-bottom:20px;">提交预订信息</h2>
-            <form id="contactForm">
-                <div class="form-group">
-                    <label for="name">姓名 *</label>
-                    <input type="text" id="name" required placeholder="请输入您的姓名">
-                </div>
-                <div class="form-group">
-                    <label for="phone">电话 *</label>
-                    <input type="tel" id="phone" required placeholder="请输入联系电话">
-                </div>
-                <div class="form-group">
-                    <label for="email">邮箱 *</label>
-                    <input type="email" id="email" required placeholder="请输入邮箱地址">
-                </div>
-                <div class="form-group">
-                    <label for="message">其他留言</label>
-                    <textarea id="message" placeholder="在这里留下任何特殊要求或备注"></textarea>
-                </div>
-                <button type="submit" class="submit-btn" id="submitBtn">提交预订</button>
-            </form>
-            <div id="statusMessage" class="status-message"></div>
-        </section>
-    </div>
+<section class="contact-form">
+<h2 style="text-align:center;margin-bottom:20px">提交预订信息</h2>
+<form id="contactForm">
+<div class="form-group"><label>姓名 *</label><input type="text" id="name" required placeholder="请输入您的姓名"></div>
+<div class="form-group"><label>电话 *</label><input type="tel" id="phone" required placeholder="请输入联系电话"></div>
+<div class="form-group"><label>邮箱 *</label><input type="email" id="email" required placeholder="请输入邮箱地址"></div>
+<div class="form-group"><label>其他留言</label><textarea id="message" placeholder="在这里留下任何特殊要求或备注"></textarea></div>
+<div class="form-group"><label>GitHub Token (用于通知)</label><input type="text" id="githubToken" placeholder="粘贴您的 GitHub Token"></div>
+<button type="submit" class="submit-btn" id="submitBtn">提交预订</button>
+</form>
+<div id="statusMessage" class="status-msg"></div>
+</section>
+</div>
 
-    <script>
-        var cart = [];
+<script>
+var cart=[];
 
-        function addToCart(id, name, price) {
-            var existing = null;
-            for (var i = 0; i < cart.length; i++) {
-                if (cart[i].id === id) {
-                    existing = cart[i];
-                    break;
-                }
-            }
+function loadCart(){
+try{var s=localStorage.getItem('tgCart');if(s)cart=JSON.parse(s)}catch(e){}
+renderCart()
+}
 
-            if (existing) {
-                existing.quantity++;
-            } else {
-                cart.push({ id: id, name: name, price: price, quantity: 1 });
-            }
+function saveCart(){
+try{localStorage.setItem('tgCart',JSON.stringify(cart))}catch(e){}
+}
 
-            try {
-                localStorage.setItem('tgCart', JSON.stringify(cart));
-            } catch(e) {}
+function addToCart(id,name,price){
+for(var i=0;i<cart.length;i++){
+if(cart[i].id===id){cart[i].qty++;saveCart();renderCart();alert('已加入: '+name);return}
+}
+cart.push({id:id,name:name,price:price,qty:1});
+saveCart();
+renderCart();
+alert('已加入: '+name)
+}
 
-            updateCartDisplay();
-            alert('已加入预订车：' + name);
-        }
+function changeQty(id,delta){
+for(var i=0;i<cart.length;i++){
+if(cart[i].id===id){
+cart[i].qty+=delta;
+if(cart[i].qty<=0){cart.splice(i,1)}
+saveCart();renderCart();return
+}
+}
+}
 
-        function removeFromCart(id) {
-            var newCart = [];
-            for (var i = 0; i < cart.length; i++) {
-                if (cart[i].id === id) {
-                    if (cart[i].quantity > 1) {
-                        cart[i].quantity--;
-                        newCart.push(cart[i]);
-                    }
-                } else {
-                    newCart.push(cart[i]);
-                }
-            }
-            cart = newCart;
-            try {
-                localStorage.setItem('tgCart', JSON.stringify(cart));
-            } catch(e) {}
-            updateCartDisplay();
-        }
+function removeItem(id){
+for(var i=0;i<cart.length;i++){
+if(cart[i].id===id){cart.splice(i,1);saveCart();renderCart();return}
+}
+}
 
-        function updateCartDisplay() {
-            var total = 0;
-            for (var i = 0; i < cart.length; i++) {
-                total += cart[i].quantity;
-            }
-            document.getElementById('cartCount').textContent = '购物车：' + total + ' 件商品';
+function renderCart(){
+var el=document.getElementById('cartContent');
+if(cart.length===0){el.innerHTML='<div class="cart-empty">购物车为空，请先选择产品</div>';return}
+var html='';
+var total=0;
+for(var i=0;i<cart.length;i++){
+var item=cart[i];
+var subtotal=item.price*item.qty;
+total+=subtotal;
+html+='<div class="cart-item">';
+html+='<div class="cart-item-info">';
+html+='<div class="cart-item-name">'+item.name+'</div>';
+html+='<div class="cart-item-price">¥'+item.price+' x '+item.qty+' = ¥'+subtotal+'</div>';
+html+='<div class="cart-item-qty">';
+html+='<button class="qty-btn" onclick="changeQty('+item.id+',-1)">−</button>';
+html+='<span class="qty-num">'+item.qty+'</span>';
+html+='<button class="qty-btn" onclick="changeQty('+item.id+',1)">+</button>';
+html+='</div></div>';
+html+='<button class="del-btn" onclick="removeItem('+item.id+')">删除</button>';
+html+='</div>'
+}
+html+='<div style="text-align:right;font-weight:bold;font-size:1.2rem;padding-top:10px;border-top:2px solid #eee;margin-top:10px">合计: ¥'+total+'</div>';
+el.innerHTML=html
+}
 
-            var itemsHtml = '';
-            for (var i = 0; i < cart.length; i++) {
-                itemsHtml += '<div class="cart-item">';
-                itemsHtml += '<span>' + cart[i].name + ' x' + cart[i].quantity + '</span>';
-                itemsHtml += '<span>' + cart[i].price + '</span>';
-                itemsHtml += '</div>';
-            }
-            document.getElementById('cartItems').innerHTML = itemsHtml;
-        }
+function showStatus(msg,type){
+var el=document.getElementById('statusMessage');
+el.textContent=msg;
+el.className='status-msg show '+type;
+setTimeout(function(){el.className='status-msg'},5000)
+}
 
-        function showStatus(message, type) {
-            var el = document.getElementById('statusMessage');
-            el.textContent = message;
-            el.className = 'status-message ' + type;
-        }
+document.getElementById('contactForm').onsubmit=function(e){
+e.preventDefault();
+var name=document.getElementById('name').value.trim();
+var phone=document.getElementById('phone').value.trim();
+var email=document.getElementById('email').value.trim();
+var message=document.getElementById('message').value.trim();
 
-        document.getElementById('contactForm').onsubmit = function(e) {
-            e.preventDefault();
+if(!name||!phone||!email){showStatus('请填写所有必填字段','error');return}
+if(cart.length===0){showStatus('请先加入至少一个预订产品','error');return}
 
-            var name = document.getElementById('name').value.trim();
-            var phone = document.getElementById('phone').value.trim();
-            var email = document.getElementById('email').value.trim();
-            var message = document.getElementById('message').value.trim();
+var btn=document.getElementById('submitBtn');
+btn.textContent='提交中...';
+btn.disabled=true;
 
-            if (!name || !phone || !email) {
-                showStatus('请填写所有必填字段', 'error');
-                return;
-            }
+var cartText='';
+var total=0;
+for(var i=0;i<cart.length;i++){
+var sub=cart[i].price*cart[i].qty;
+total+=sub;
+cartText+='  - '+cart[i].name+' ¥'+cart[i].price+' x'+cart[i].qty+' = ¥'+sub+'\n';
+}
+cartText+='  合计: ¥'+total;
 
-            if (cart.length === 0) {
-                showStatus('请先加入至少一个预订产品', 'error');
-                return;
-            }
+var body='**预订人信息:**\n';
+body+='  - 姓名: '+name+'\n';
+body+='  - 电话: '+phone+'\n';
+body+='  - 邮箱: '+email+'\n';
+body+='  - 留言: '+(message||'无')+'\n\n';
+body+='**预订产品:**\n'+cartText+'\n\n';
+body+='**提交时间:** '+new Date().toLocaleString();
 
-            var submitBtn = document.getElementById('submitBtn');
-            submitBtn.textContent = '提交中...';
-            submitBtn.disabled = true;
+fetch('https://api.github.com/repos/lianchuzhong/tg-new/issues',{
+method:'POST',
+headers:{'Authorization':'token '+document.getElementById('githubToken').value,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+body:JSON.stringify({title:'新团购预售: '+name,body:body})
+}).then(function(r){
+if(r.ok){
+showStatus('预订提交成功! 我们将尽快联系您.','success');
+document.getElementById('contactForm').reset();
+cart=[];saveCart();renderCart();
+}else{
+r.json().then(function(d){showStatus('提交失败: '+d.message,'error')})
+}
+btn.textContent='提交预订';
+btn.disabled=false
+}).catch(function(err){
+showStatus('网络错误: '+err.message,'error');
+btn.textContent='提交预订';
+btn.disabled=false
+})
+};
 
-            var repo = 'tg-new';
-            var owner = 'lianchuzhong';
-            var token = 'YOUR_GITHUB_TOKEN_HERE';
-
-            var issueTitle = '新团购预售：' + name;
-            var cartText = '';
-            for (var i = 0; i < cart.length; i++) {
-                cartText += '- ' + cart[i].name + ' (' + cart[i].price + ') x' + cart[i].quantity + '\n';
-            }
-
-            var issueBody = '**预订人信息:**\n';
-            issueBody += '- 姓名: ' + name + '\n';
-            issueBody += '- 电话: ' + phone + '\n';
-            issueBody += '- 邮箱: ' + email + '\n';
-            issueBody += '- 留言: ' + (message || '无') + '\n\n';
-            issueBody += '**预订产品:**\n' + cartText + '\n';
-            issueBody += '**提交时间:** ' + new Date().toLocaleString();
-
-            var apiUrl = 'https://api.github.com/repos/' + owner + '/' + repo + '/issues';
-
-            fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'token ' + token,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    title: issueTitle,
-                    body: issueBody
-                })
-            }).then(function(response) {
-                if (response.ok) {
-                    showStatus('预订提交成功！我们将尽快联系您。', 'success');
-                    document.getElementById('contactForm').reset();
-                    cart = [];
-                    try { localStorage.removeItem('tgCart'); } catch(e) {}
-                    updateCartDisplay();
-                } else {
-                    showStatus('提交失败，请稍后重试', 'error');
-                }
-                submitBtn.textContent = '提交预订';
-                submitBtn.disabled = false;
-            }).catch(function(err) {
-                showStatus('提交过程中发生错误：' + err.message, 'error');
-                submitBtn.textContent = '提交预订';
-                submitBtn.disabled = false;
-            });
-        };
-
-        try {
-            var savedCart = localStorage.getItem('tgCart');
-            if (savedCart) {
-                cart = JSON.parse(savedCart);
-                updateCartDisplay();
-            }
-        } catch(e) {}
-    </script>
+loadCart();
+</script>
 </body>
 </html>
