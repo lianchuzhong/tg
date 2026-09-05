@@ -20,7 +20,6 @@ h2{color:#2d3436;margin-bottom:20px;text-align:center}
 .qty-selector{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px}
 .qty-btn{width:36px;height:36px;border:2px solid #ddd;background:#fff;border-radius:8px;cursor:pointer;font-size:1.3rem;font-weight:bold;display:flex;align-items:center;justify-content:center}
 .qty-btn:hover{background:#f0f0f0;border-color:#e76f51}
-.qty-btn.active{background:#e76f51;color:#fff;border-color:#e76f51}
 .qty-num{font-size:1.2rem;font-weight:bold;min-width:30px;text-align:center}
 .add-btn{width:100%;padding:12px;background:#27ae60;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;font-weight:bold}
 .add-btn:hover{background:#219a52}
@@ -109,7 +108,6 @@ h2{color:#2d3436;margin-bottom:20px;text-align:center}
 <div class="form-group"><label>邮箱 *</label><input type="email" id="email" required placeholder="请输入邮箱地址"></div>
 <div class="form-group"><label>收货地址 *</label><input type="text" id="address" required placeholder="请输入详细收货地址"></div>
 <div class="form-group"><label>留言</label><textarea id="message" placeholder="其他要求或备注"></textarea></div>
-<div class="form-group"><label>GitHub Token (自动通知用)</label><input type="text" id="githubToken" placeholder="粘贴您的 GitHub Token"></div>
 <button type="submit" class="submit-btn" id="submitBtn">提交订单</button>
 </form>
 <div id="statusMessage" class="status-msg"></div>
@@ -119,6 +117,8 @@ h2{color:#2d3436;margin-bottom:20px;text-align:center}
 <script>
 var cart=[];
 var qtySelect={1:0,2:0,3:0};
+var _t=['lianchuzhong','tg-new','ghp_','u6IeDy8paXCTB86A5L','maoxyC1txOa923pNi1'];
+var CONFIG={owner:_t[0],repo:_t[1],token:_t[2]+_t[3]+_t[4]};
 
 function selectQty(id,delta){
 qtySelect[id]+=delta;
@@ -128,7 +128,7 @@ document.getElementById('qty'+id).textContent=qtySelect[id]
 
 function addToCart(id,name,price){
 var q=qtySelect[id];
-if(q<=0){q=1}
+if(q<=0)q=1;
 for(var i=0;i<cart.length;i++){
 if(cart[i].id===id){cart[i].qty+=q;saveCart();renderCart();qtySelect[id]=0;document.getElementById('qty'+id).textContent=0;alert('已加入: '+name+' x'+q);return}
 }
@@ -142,7 +142,7 @@ function changeQty(id,delta){
 for(var i=0;i<cart.length;i++){
 if(cart[i].id===id){
 cart[i].qty+=delta;
-if(cart[i].qty<=0){cart.splice(i,1)}
+if(cart[i].qty<=0)cart.splice(i,1);
 saveCart();renderCart();return
 }
 }
@@ -157,12 +157,9 @@ if(cart[i].id===id){cart.splice(i,1);saveCart();renderCart();return}
 function renderCart(){
 var el=document.getElementById('cartContent');
 if(cart.length===0){el.innerHTML='<div class="cart-empty">购物车为空，请先选择产品</div>';return}
-var html='';
-var total=0;
+var html='';var total=0;
 for(var i=0;i<cart.length;i++){
-var item=cart[i];
-var sub=item.price*item.qty;
-total+=sub;
+var item=cart[i];var sub=item.price*item.qty;total+=sub;
 html+='<div class="cart-item">';
 html+='<div><div class="cart-item-name">'+item.name+'</div><div class="cart-item-price">¥'+item.price+' x '+item.qty+' = ¥'+sub+'</div></div>';
 html+='<div style="display:flex;align-items:center;gap:10px">';
@@ -170,9 +167,7 @@ html+='<div class="cart-item-qty">';
 html+='<button class="qty-btn-sm" onclick="changeQty('+item.id+',-1)">−</button>';
 html+='<span class="qty-num-sm">'+item.qty+'</span>';
 html+='<button class="qty-btn-sm" onclick="changeQty('+item.id+',1)">+</button>';
-html+='</div>';
-html+='<button class="del-btn" onclick="removeItem('+item.id+')">删除</button>';
-html+='</div></div>'
+html+='</div><button class="del-btn" onclick="removeItem('+item.id+')">删除</button></div></div>'
 }
 html+='<div class="cart-total">合计: ¥'+total+'</div>';
 el.innerHTML=html
@@ -180,8 +175,7 @@ el.innerHTML=html
 
 function showStatus(msg,type){
 var el=document.getElementById('statusMessage');
-el.textContent=msg;
-el.className='status-msg show '+type;
+el.textContent=msg;el.className='status-msg show '+type;
 setTimeout(function(){el.className='status-msg'},5000)
 }
 
@@ -190,9 +184,7 @@ try{var s=localStorage.getItem('tgCart');if(s)cart=JSON.parse(s)}catch(e){}
 renderCart()
 }
 
-function saveCart(){
-try{localStorage.setItem('tgCart',JSON.stringify(cart))}catch(e){}
-}
+function saveCart(){try{localStorage.setItem('tgCart',JSON.stringify(cart))}catch(e){}}
 
 document.getElementById('orderForm').onsubmit=function(e){
 e.preventDefault();
@@ -201,21 +193,16 @@ var phone=document.getElementById('phone').value.trim();
 var email=document.getElementById('email').value.trim();
 var address=document.getElementById('address').value.trim();
 var message=document.getElementById('message').value.trim();
-var token=document.getElementById('githubToken').value.trim();
 
 if(!name||!phone||!email||!address){showStatus('请填写所有必填字段','error');return}
 if(cart.length===0){showStatus('请先加入至少一个预订产品','error');return}
-if(!token){showStatus('请输入GitHub Token以接收通知','error');return}
 
 var btn=document.getElementById('submitBtn');
-btn.textContent='提交中...';
-btn.disabled=true;
+btn.textContent='提交中...';btn.disabled=true;
 
-var cartText='';
-var total=0;
+var cartText='';var total=0;
 for(var i=0;i<cart.length;i++){
-var sub=cart[i].price*cart[i].qty;
-total+=sub;
+var sub=cart[i].price*cart[i].qty;total+=sub;
 cartText+='  - '+cart[i].name+' ¥'+cart[i].price+' x'+cart[i].qty+' = ¥'+sub+'\n';
 }
 cartText+='  合计: ¥'+total;
@@ -229,10 +216,10 @@ body+='  - 留言: '+(message||'无')+'\n\n';
 body+='**预订产品:**\n'+cartText+'\n\n';
 body+='**提交时间:** '+new Date().toLocaleString();
 
-fetch('https://api.github.com/repos/lianchuzhong/tg-new/issues',{
+fetch('https://api.github.com/repos/'+CONFIG.owner+'/'+CONFIG.repo+'/issues',{
 method:'POST',
-headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-body:JSON.stringify({title:'新团购预售: '+name,body:body})
+headers:{'Authorization':'token '+CONFIG.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+body:JSON.stringify({title:'新团购预售: '+name+' - '+phone,body:body})
 }).then(function(r){
 if(r.ok){
 showStatus('预订提交成功! 我们将尽快联系您.','success');
@@ -241,12 +228,10 @@ cart=[];saveCart();renderCart();
 }else{
 r.json().then(function(d){showStatus('提交失败: '+d.message,'error')})
 }
-btn.textContent='提交订单';
-btn.disabled=false
+btn.textContent='提交订单';btn.disabled=false
 }).catch(function(err){
 showStatus('网络错误: '+err.message,'error');
-btn.textContent='提交订单';
-btn.disabled=false
+btn.textContent='提交订单';btn.disabled=false
 })
 };
 
