@@ -126,6 +126,15 @@ var C=[];
 var S={1:0,2:0,3:0};
 var _t=['lianchuzhong','tg-new','ghp_','u6IeDy8paXCTB86A5L','maoxyC1txOa923pNi1'];
 var K={o:_t[0],r:_t[1],t:_t[2]+_t[3]+_t[4]};
+var ON=0;
+
+function orderNo(){
+var d=new Date(),p=function(x){return (x<10?'0':'')+x};
+var stamp=''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
+ON=(ON+1)%1000;
+var rnd=('000'+Math.floor(Math.random()*1000)).slice(-3);
+return 'TG'+stamp+'-'+rnd+'-'+('00'+ON).slice(-3);
+}
 
 function sel(id,d){S[id]+=d;if(S[id]<0)S[id]=0;document.getElementById('q'+id).textContent=S[id]}
 
@@ -186,16 +195,17 @@ var ms=document.getElementById('m').value.trim();
 if(!n||!p||!em||!ad){msg('请填写所有必填字段','err');return}
 if(C.length===0){msg('请先加入至少一个预订产品','err');return}
 var b=document.getElementById('sb');b.textContent='提交中...';b.disabled=true;
+var ono=orderNo();
 var ct='';var tot=0;
 for(var i=0;i<C.length;i++){var s=C[i].price*C[i].q;tot+=s;ct+='  - '+C[i].name+' ¥'+C[i].price+' ×'+C[i].q+' = ¥'+s+'\n'}
-ct+='  合计: ¥'+tot;
-var bd='**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+em+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+ct+'\n\n**提交时间:** '+new Date().toLocaleString();
+ct+='  合计: ¥'+tot+'（含订单号: '+ono+'）';
+var bd='**订单号:** '+ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+em+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+ct+'\n\n**提交时间:** '+new Date().toLocaleString();
 fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/issues',{
 method:'POST',
 headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-body:JSON.stringify({title:'新团购预售: '+n+' - '+p,body:bd})
+body:JSON.stringify({title:'新团购预售 ['+ono+'] '+n+' - '+p,body:bd})
 }).then(function(r){
-if(r.ok){msg('预订提交成功! 我们将尽快联系您.','ok');document.getElementById('of').reset();C=[];save();draw()}
+if(r.ok){msg('预订提交成功! 您的订单号: '+ono+'，我们将尽快联系您.','ok');document.getElementById('of').reset();C=[];save();draw()}
 else r.json().then(function(d){msg('提交失败: '+d.message,'err')});
 b.textContent='提交订单';b.disabled=false
 }).catch(function(err){msg('网络错误: '+err.message,'err');b.textContent='提交订单';b.disabled=false})
