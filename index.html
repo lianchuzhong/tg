@@ -185,6 +185,12 @@ setTimeout(function(){el.className='msg'},5000)
 function ld(){try{var s=localStorage.getItem('tg');if(s)C=JSON.parse(s)}catch(e){}draw()}
 function save(){try{localStorage.setItem('tg',JSON.stringify(C))}catch(e){}}
 
+function mailOrder(ono,n,p,em,ad,ms,ct){
+var sub='团购预售订单 '+ono+' '+n;
+var body='订单号: '+ono+'\n预订人信息:\n  姓名: '+n+'\n  电话: '+p+'\n  邮箱: '+em+'\n  地址: '+ad+'\n  留言: '+(ms||'无')+'\n\n预订产品:\n'+ct+'\n\n提交时间: '+new Date().toLocaleString();
+window.location.href='mailto:cllcz@foxmail.com?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body)
+}
+
 document.getElementById('of').onsubmit=function(e){
 e.preventDefault();
 var n=document.getElementById('n').value.trim();
@@ -205,7 +211,7 @@ method:'POST',
 headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
 body:JSON.stringify({title:'新团购预售 ['+ono+'] '+n+' - '+p,body:bd})
 }).then(function(r){
-if(r.ok){msg('预订提交成功! 您的订单号: '+ono+'，我们将尽快联系您.','ok');document.getElementById('of').reset();C=[];save();draw()}
+if(r.ok){msg('预订提交成功! 您的订单号: '+ono+'，我们将尽快联系您.','ok');document.getElementById('of').reset();C=[];save();draw();mailOrder(ono,n,p,em,ad,ms,ct)}
 else r.json().then(function(d){msg('提交失败: '+d.message,'err')});
 b.textContent='提交订单';b.disabled=false
 }).catch(function(err){msg('网络错误: '+err.message,'err');b.textContent='提交订单';b.disabled=false})
@@ -215,3 +221,4 @@ ld();
 </script>
 </body>
 </html>
+
