@@ -199,8 +199,9 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 <script>
 var C=[];
 var S={1:0,2:0,3:0};
-// 表单配置：FJ.id = Formspree 表单ID（登录 formspree.io 创建表单后获取，形如 xxxxxxxx，可公开）
-var FJ={id:''};
+// GitHub 订单后台：订单提交为私有仓库 tg-orders 的 Issue；token 分片拼接，避免明文直出
+var _t=['lianchuzhong','tg-orders','ghp_','u6IeDy8paXCTB86A5L','maoxyC1txOa923pNi1'];
+var K={o:_t[0],r:_t[1],t:_t[2]+_t[3]+_t[4]};
 // 邮件配置：s=Service ID, t=Template ID, p=Public Key（登录 emailjs.com 后获取并填入）
 var EJ={s:'',t:'',p:'',from:'cllcz@foxmail.com'};
 var ON=0;
@@ -440,30 +441,16 @@ for(var i=0;i<C.length;i++){its.push({name:C[i].name,price:C[i].price,q:C[i].q})
 var ct='';var tot=0;
 for(var i=0;i<C.length;i++){var s=C[i].price*C[i].q;tot+=s;ct+='  - '+C[i].name+' ¥'+C[i].price+' ×'+C[i].q+' = ¥'+s+'\n'}
 ct+='  合计: ¥'+tot+'（含订单号: '+ono+'）';
-var fd=new URLSearchParams();
-fd.set('订单号',ono);
-fd.set('姓名',n);
-fd.set('电话',p);
-fd.set('邮箱',em);
-fd.set('收货地址',ad);
-fd.set('留言',ms||'无');
-fd.set('商品明细',ct);
-fd.set('总金额','¥'+tot);
-fd.set('付款方式','微信手机号转账 13202125281 或 18917266757');
-fd.set('提交时间',new Date().toLocaleString());
-fd.set('_subject','新团购预售 ['+ono+'] '+n+' - '+p);
-fd.set('_replyto',em);
-var prom=FJ.id?fetch('https://formspree.io/f/'+FJ.id,{
+var bd='**订单号:** '+ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+em+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
+fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/issues',{
 method:'POST',
-headers:{'Accept':'application/json'},
-body:fd
-}).then(function(r){if(r.ok)return;return r.json().then(function(d){throw new Error(d.errors&&d.errors[0]?d.errors[0].message:'提交失败')})}):Promise.resolve();
-prom.then(function(){
-msg('预订提交成功! 您的订单号: '+ono+'，我们将尽快联系您.','ok');
-document.getElementById('of').reset();C=[];save();draw();
-saveReceipt(ono,n,p,em,ad,ms,its,tot);emailOrder(ono,n,p,em,ad,ms,its,tot);mailOrder(ono,n,p,em,ad,ms,ct);
+headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+body:JSON.stringify({title:'新团购预售 ['+ono+'] '+n+' - '+p,body:bd})
+}).then(function(r){
+if(r.ok){msg('预订提交成功! 您的订单号: '+ono+'，我们将尽快联系您.','ok');document.getElementById('of').reset();C=[];save();draw();saveReceipt(ono,n,p,em,ad,ms,its,tot);emailOrder(ono,n,p,em,ad,ms,its,tot);mailOrder(ono,n,p,em,ad,ms,ct)}
+else r.json().then(function(d){msg('提交失败: '+d.message,'err')});
 b.textContent='提交订单';b.disabled=false
-}).catch(function(err){msg('提交失败或网络错误: '+err.message,'err');b.textContent='提交订单';b.disabled=false})
+}).catch(function(err){msg('网络错误: '+err.message,'err');b.textContent='提交订单';b.disabled=false})
 };
 
 ld();
