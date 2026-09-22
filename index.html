@@ -16,6 +16,20 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 .products{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:30px}
 .product{background:#fff;border-radius:10px;padding:20px;box-shadow:0 5px 15px rgba(0,0,0,.1);text-align:center}
 .product .icon{font-size:3rem;margin-bottom:10px}
+.pimg{width:100%;height:200px;object-fit:cover;border-radius:10px;margin-bottom:8px}
+.pimg.full{height:280px}
+.durian-detail{background:#fff;padding:30px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:30px}
+.durian-detail .dtitle{font-size:1.6rem;font-weight:bold;color:#5A2D0C;text-align:center;margin-bottom:6px}
+.durian-detail .dsub{text-align:center;color:#8B4513;font-size:.95rem;margin-bottom:18px}
+.dsec{margin-bottom:18px}
+.dsec h3{color:#8B4513;font-size:1.15rem;margin-bottom:8px;border-left:4px solid #e76f51;padding-left:10px}
+.dsec p{color:#636e72;font-size:.95rem;line-height:1.9}
+.dimgs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.dimgs img{width:100%;height:260px;object-fit:cover;border-radius:8px}
+.dbadge{display:inline-block;background:#fef9e7;border:1px solid #f9e79f;color:#b7950b;border-radius:6px;padding:4px 10px;font-size:.82rem;margin:4px 6px 0 0}
+.dlist{margin-top:6px;padding-left:0;list-style:none}
+.dlist li{padding:6px 0 6px 22px;position:relative;color:#636e72;font-size:.95rem;border-bottom:1px dashed #f0f0f0}
+.dlist li:before{content:'✓';position:absolute;left:0;color:#27ae60;font-weight:bold}
 .product .name{font-size:1.2rem;font-weight:bold;margin-bottom:5px}
 .product .price{color:#e76f51;font-weight:bold;font-size:1.3rem;margin-bottom:5px}
 .product .desc{color:#636e72;font-size:.85rem;margin-bottom:15px}
@@ -139,16 +153,16 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 <h2>选择产品</h2>
 <div class="products">
 <div class="product">
-<div class="icon">📦</div>
-<div class="name">经典团购套餐</div>
-<div class="price">¥199</div>
-<div class="desc">限时优惠，专为团购设计的基础套餐</div>
+<div class="icon"><img class="pimg" src="img/durian_whole.jpg" alt="猫山王榴莲"></div>
+<div class="name">马来西亚 D197 猫山王榴莲</div>
+<div class="price">¥98/斤</div>
+<div class="desc">树熟落果 · -196℃液氮锁鲜 · 马来西亚彭亨州原产</div>
 <div class="qty-row">
-<button onclick="sel(1,-1)">−</button>
-<span id="q1">0</span>
-<button onclick="sel(1,1)">+</button>
+<button onclick="sel(4,-1)">−</button>
+<span id="q4">0</span>
+<button onclick="sel(4,1)">+</button>
 </div>
-<button class="add-btn" onclick="add(1,'经典团购套餐',199)">加入预订</button>
+<button class="add-btn" onclick="add(4,'马来西亚D197猫山王榴莲',98)">加入预订</button>
 </div>
 <div class="product">
 <div class="icon">🎁</div>
@@ -173,6 +187,38 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 <button onclick="sel(3,1)">+</button>
 </div>
 <button class="add-btn" onclick="add(3,'终极团购套餐',399)">加入预订</button>
+</div>
+</div>
+
+<div class="durian-detail">
+<div class="dtitle">马来西亚 D197 猫山王榴莲</div>
+<div class="dsub">世界公认的榴莲顶级品种 · 98元/斤 · 预售中</div>
+<div class="dimgs">
+<img src="img/durian_whole.jpg" alt="猫山王榴莲整果">
+<img src="img/durian_flesh.jpg" alt="猫山王榴莲果肉">
+</div>
+<div class="dsec">
+<h3>核心卖点</h3>
+<p>源自马来西亚核心产区，是世界公认的榴莲顶级品种。严格遵循自然树熟落果标准，果实落地后即刻采用 -196℃ 液氮急冻锁鲜技术，完整封存枝头巅峰风味与新鲜口感，全程可溯源。</p>
+<div><span class="dbadge">树熟自然落果</span><span class="dbadge">-196℃ 液氮锁鲜</span><span class="dbadge">全程可溯源</span></div>
+</div>
+<div class="dsec">
+<h3>外观标识 · 正宗认证</h3>
+<p class="pimg full"><img class="pimg full" src="img/durian_whole.jpg" alt="五角星纹路标识"></p>
+<p>果皮呈自然青绿色，分布着短而粗壮的金字塔形尖刺；果底部带有天然标志性的<b>五角星纹路</b>，是正宗 D197 猫山王区别于其他品种最直观的身份印记。果形饱满圆润，单果重量通常在 1.5-3kg 之间。</p>
+</div>
+<div class="dsec">
+<h3>风味口感 · 奶油回甘</h3>
+<p class="pimg full"><img class="pimg full" src="img/durian_flesh.jpg" alt="金黄奶香果肉"></p>
+<p>果肉呈浓郁饱满的金黄色，质地绵密细腻如<b>奶油冰淇淋</b>，入口即化。口感层次极其丰富，醇厚甜糯中带着优雅的微苦回甘，果香浓郁持久而不齁腻，糖度可达<b>38度以上</b>；果核普遍偏小呈扁圆形，果肉可食率超过 <b>30%</b>，是资深榴莲爱好者公认的"榴莲之王"。</p>
+</div>
+<div class="dsec">
+<h3>品质保障</h3>
+<ul class="dlist">
+<li>产地直采：彭亨州劳勿高山老树果园，树龄10年以上，果味更浓郁；</li>
+<li>锁鲜工艺：树熟自然落果，-196℃液氮急冻锁鲜，锁住原生风味；</li>
+<li>冷链运输：全程-18℃真空冷链，中马快速通关通道，36小时果园直达国内。</li>
+</ul>
 </div>
 </div>
 
@@ -221,7 +267,7 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
 var C=[];
-var S={1:0,2:0,3:0};
+var S={1:0,2:0,3:0,4:0};
 // GitHub 订单后台：订单提交为私有仓库 tg-orders 的 Issue；token 分片拼接，避免明文直出
 var _t=['lianchuzhong','tg-orders','ghp_','u6IeDy8paXCTB86A5L','maoxyC1txOa923pNi1'];
 var K={o:_t[0],r:_t[1],t:_t[2]+_t[3]+_t[4]};
