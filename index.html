@@ -74,6 +74,16 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 .oc-box button:hover{background:#d65a40}
 .oc-box button.oc-close{background:#b2bec3}
 .oc-box button.oc-close:hover{background:#95a5a6}
+.pay{background:#fff;padding:25px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-top:30px}
+.pay-tip{background:#fef9e7;border:1px solid #f9e79f;border-radius:8px;color:#b7950b;font-size:.9rem;padding:12px 14px;margin-bottom:18px;text-align:center}
+.pay-item{display:flex;align-items:center;gap:14px;padding:14px;border:2px solid #eee;border-radius:10px;margin-bottom:12px;cursor:pointer;transition:border-color .2s}
+.pay-item:hover{border-color:#07c160}
+.pay-item .pay-logo{width:44px;height:44px;border-radius:10px;background:#07c160;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:.72rem;flex-shrink:0}
+.pay-item .pay-name{font-weight:bold;font-size:1.05rem}
+.pay-item .pay-num{color:#07c160;font-weight:bold;font-size:1.2rem;letter-spacing:1px}
+.pay-item .pay-note{color:#636e72;font-size:.82rem}
+.pay-copy{margin-left:auto;background:#07c160;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.85rem;cursor:pointer;flex-shrink:0}
+.pay-copy:hover{background:#059e53}
 </style>
 </head>
 <body>
@@ -159,6 +169,29 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 <button type="submit" class="submit" id="sb">提交订单</button>
 </form>
 <div id="sm" class="msg"></div>
+</div>
+
+<div class="pay">
+<h2>付款方式</h2>
+<div class="pay-tip">请在提交订单后一周内完成付款，付款成功后将支付截图通过微信发给客服确认，我们将尽快发货。</div>
+<div class="pay-item" onclick="copyPay(this)">
+<div class="pay-logo">微信<br>转账</div>
+<div>
+<div class="pay-name">微信手机号转账</div>
+<div class="pay-num">13202125281</div>
+<div class="pay-note">微信号: lcz13202125281</div>
+</div>
+<button class="pay-copy">复制</button>
+</div>
+<div class="pay-item" onclick="copyPay(this)">
+<div class="pay-logo">微信<br>转账</div>
+<div>
+<div class="pay-name">微信手机号转账</div>
+<div class="pay-num">18917266757</div>
+<div class="pay-note">备用付款号码</div>
+</div>
+<button class="pay-copy">复制</button>
+</div>
 </div>
 </div>
 
@@ -275,6 +308,18 @@ if(!_ocData)return;
 ocDownload(_ocData,'订单存根_'+_ocNo+'.png')
 }
 
+function copyPay(el){
+var num=el.querySelector('.pay-num').textContent;
+function done(){var b=el.querySelector('.pay-copy');var t=b.textContent;b.textContent='已复制';setTimeout(function(){b.textContent=t},1500)}
+try{
+if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(num).then(done);return}
+}catch(err){}
+var ta=document.createElement('textarea');ta.value=num;document.body.appendChild(ta);ta.select();
+try{document.execCommand('copy')}catch(err){}
+document.body.removeChild(ta);
+done()
+}
+
 function emailOrder(ono,n,p,em,ad,ms,its,tot){
 try{
 if(!window.emailjs||!EJ.s||!EJ.t||!EJ.p)return;
@@ -284,7 +329,8 @@ emailjs.send(EJ.s,EJ.t,{
 to_name:n,to_email:em,reply_to:em,
 from_name:'连楚钟源头团购预售',from_email:EJ.from,
 ono:ono,phone:p,address:ad,msg:(ms||'无'),
-items:il+'合计: ¥'+tot,total:'¥'+tot,time:new Date().toLocaleString()
+items:il+'合计: ¥'+tot,total:'¥'+tot,time:new Date().toLocaleString(),
+pay:'微信手机号转账 13202125281 或 18917266757'
 },EJ.p).catch(function(){})
 }catch(err){}
 }
@@ -362,6 +408,10 @@ y+=ih;
 ctx.font='13px '+pf;ctx.textAlign='center';ctx.fillStyle='#7f8c8d';
 ctx.fillText('微信: lcz13202125281  ·  手机: 18917266757',W/2,y);
 y+=24;
+ctx.fillStyle='#b7950b';
+ctx.fillText('付款方式: 微信手机号转账 13202125281 / 18917266757',W/2,y);
+y+=24;
+ctx.fillStyle='#7f8c8d';
 ctx.fillText('提交即表示同意以上预售订单内容',W/2,y);
 y+=20;
 var out=document.createElement('canvas');
@@ -390,7 +440,7 @@ for(var i=0;i<C.length;i++){its.push({name:C[i].name,price:C[i].price,q:C[i].q})
 var ct='';var tot=0;
 for(var i=0;i<C.length;i++){var s=C[i].price*C[i].q;tot+=s;ct+='  - '+C[i].name+' ¥'+C[i].price+' ×'+C[i].q+' = ¥'+s+'\n'}
 ct+='  合计: ¥'+tot+'（含订单号: '+ono+'）';
-var bd='**订单号:** '+ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+em+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+ct+'\n\n**提交时间:** '+new Date().toLocaleString();
+var bd='**订单号:** '+ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+em+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
 fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/issues',{
 method:'POST',
 headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
