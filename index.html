@@ -52,16 +52,29 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 #fbtn{position:fixed;right:20px;bottom:20px;background:#e76f51;color:#fff;border:none;border-radius:50px;padding:14px 22px;font-size:1.05rem;font-weight:bold;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);z-index:999;display:flex;align-items:center;gap:8px}
 #fbtn:hover{background:#d65a40}
 .fcnt{background:#fff;color:#e76f51;border-radius:20px;padding:2px 10px;font-size:.95rem;min-width:26px;text-align:center}
-#fpanel{position:fixed;right:20px;bottom:80px;width:320px;max-width:94vw;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:999;display:none;overflow:hidden;flex-direction:column}
+#fpanel{position:fixed;right:20px;bottom:80px;width:340px;max-width:94vw;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:999;display:none;overflow-y:auto;flex-direction:column;max-height:86vh}
 #fpanel.show{display:flex}
-.fhead{background:#2d3436;color:#fff;padding:12px 16px;font-weight:bold;display:flex;justify-content:space-between;align-items:center}
+.fhead{background:#2d3436;color:#fff;padding:12px 16px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0}
 .fhead button{background:#ff7675;color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:1rem;line-height:1}
-#fbody{padding:10px 16px;max-height:50vh;overflow-y:auto}
+#fbody{padding:10px 16px;max-height:30vh;overflow-y:auto}
 .fempty{text-align:center;color:#b2bec3;padding:16px}
 .fitem{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:.95rem}
 .fitem span:first-child{font-weight:bold}
 .fitem span:last-child{color:#e76f51;white-space:nowrap}
 .ftotal{text-align:right;font-weight:bold;padding-top:12px;color:#e76f51;font-size:1.1rem}
+#fof{padding:12px 16px 16px;border-top:1px solid #eee;position:sticky;bottom:0;background:#fff}
+#fof .ftitle{font-size:.95rem;font-weight:bold;color:#2d3436;margin-bottom:10px}
+.ffield{margin-bottom:9px}
+.ffield input,.ffield textarea{width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:.95rem;background:#fff}
+.ffield input:focus,.ffield textarea:focus{outline:none;border-color:#e76f51}
+.ffield textarea{min-height:52px;resize:vertical}
+#fof .fsubmit{width:100%;padding:12px;background:#e76f51;color:#fff;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:1rem}
+#fof .fsubmit:hover{background:#d65a40}
+#fof .fsubmit:disabled{opacity:.65;cursor:default}
+.fmsg{font-size:.85rem;text-align:center;padding:8px 0;display:none;font-weight:bold}
+.fmsg.show{display:block}
+.fmsg.ok{color:#27ae60}
+.fmsg.err{color:#c0392b}
 #oc-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
 #oc-modal.show{display:flex}
 .oc-box{background:#fff;border-radius:12px;max-width:94vw;max-height:92vh;overflow:auto;padding:22px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.4)}
@@ -91,6 +104,16 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 <div id="fpanel">
 <div class="fhead">🛒 造物主团购物车<button onclick="ftoggle()">×</button></div>
 <div id="fbody"><div class="fempty">购物车为空，请先选择产品</div></div>
+<form id="fof" onsubmit="fsubmit(event)">
+<div class="ftitle">填写收货信息</div>
+<div class="ffield"><input type="text" id="fn" required placeholder="姓名 *"></div>
+<div class="ffield"><input type="tel" id="fp" required placeholder="电话 *"></div>
+<div class="ffield"><input type="email" id="fe" required placeholder="邮箱 *"></div>
+<div class="ffield"><input type="text" id="fa" required placeholder="收货地址 *"></div>
+<div class="ffield"><textarea id="fm" placeholder="留言(可选)"></textarea></div>
+<button type="submit" class="fsubmit" id="fsb">提交订单</button>
+<div id="fsm" class="fmsg"></div>
+</form>
 </div>
 <div id="oc-modal">
 <div class="oc-box">
@@ -425,6 +448,35 @@ document.getElementById('oc-modal').classList.add('show');
 try{ocDownload(_ocData,'订单存根_'+ono+'.png')}catch(err){}
 }
 
+function buildOrder(){
+var ono=orderNo();
+var its=[];
+for(var i=0;i<C.length;i++){its.push({name:C[i].name,price:C[i].price,q:C[i].q});}
+var ct='';var tot=0;
+for(var i=0;i<C.length;i++){var s=C[i].price*C[i].q;tot+=s;ct+='  - '+C[i].name+' ¥'+C[i].price+' ×'+C[i].q+' = ¥'+s+'\n'}
+ct+='  合计: ¥'+tot+'（含订单号: '+ono+'）';
+return {ono:ono,its:its,ct:ct,tot:tot}
+}
+
+function submitOrder(n,p,em,ad,ms,b,msgSel){
+var o=buildOrder();
+var bd='**订单号:** '+o.ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+em+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+o.ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
+fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/issues',{
+method:'POST',
+headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+body:JSON.stringify({title:'新团购预售 ['+o.ono+'] '+n+' - '+p,body:bd})
+}).then(function(r){
+if(r.ok){
+msgSel('预订提交成功! 您的订单号: '+o.ono+'，我们将尽快联系您.','ok');
+document.getElementById('of').reset();
+C=[];save();draw();
+saveReceipt(o.ono,n,p,em,ad,ms,o.its,o.tot);emailOrder(o.ono,n,p,em,ad,ms,o.its,o.tot);mailOrder(o.ono,n,p,em,ad,ms,o.ct)
+}
+else r.json().then(function(d){msgSel('提交失败: '+d.message,'err')});
+b.textContent='提交订单';b.disabled=false
+}).catch(function(err){msgSel('网络错误: '+err.message,'err');b.textContent='提交订单';b.disabled=false})
+}
+
 document.getElementById('of').onsubmit=function(e){
 e.preventDefault();
 var n=document.getElementById('n').value.trim();
@@ -435,23 +487,22 @@ var ms=document.getElementById('m').value.trim();
 if(!n||!p||!em||!ad){msg('请填写所有必填字段','err');return}
 if(C.length===0){msg('请先加入至少一个预订产品','err');return}
 var b=document.getElementById('sb');b.textContent='提交中...';b.disabled=true;
-var ono=orderNo();
-var its=[];
-for(var i=0;i<C.length;i++){its.push({name:C[i].name,price:C[i].price,q:C[i].q});}
-var ct='';var tot=0;
-for(var i=0;i<C.length;i++){var s=C[i].price*C[i].q;tot+=s;ct+='  - '+C[i].name+' ¥'+C[i].price+' ×'+C[i].q+' = ¥'+s+'\n'}
-ct+='  合计: ¥'+tot+'（含订单号: '+ono+'）';
-var bd='**订单号:** '+ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+em+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
-fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/issues',{
-method:'POST',
-headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-body:JSON.stringify({title:'新团购预售 ['+ono+'] '+n+' - '+p,body:bd})
-}).then(function(r){
-if(r.ok){msg('预订提交成功! 您的订单号: '+ono+'，我们将尽快联系您.','ok');document.getElementById('of').reset();C=[];save();draw();saveReceipt(ono,n,p,em,ad,ms,its,tot);emailOrder(ono,n,p,em,ad,ms,its,tot);mailOrder(ono,n,p,em,ad,ms,ct)}
-else r.json().then(function(d){msg('提交失败: '+d.message,'err')});
-b.textContent='提交订单';b.disabled=false
-}).catch(function(err){msg('网络错误: '+err.message,'err');b.textContent='提交订单';b.disabled=false})
+submitOrder(n,p,em,ad,ms,b,msg)
 };
+
+function fsubmit(e){
+if(e&&e.preventDefault)e.preventDefault();
+var n=document.getElementById('fn').value.trim();
+var p=document.getElementById('fp').value.trim();
+var em=document.getElementById('fe').value.trim();
+var ad=document.getElementById('fa').value.trim();
+var ms=document.getElementById('fm').value.trim();
+function fmsg(t,c){var el=document.getElementById('fsm');el.textContent=t;el.className='fmsg show '+c;setTimeout(function(){el.className='fmsg'},6000)}
+if(!n||!p||!em||!ad){fmsg('请填写所有必填字段','err');return}
+if(C.length===0){fmsg('请先加入至少一个预订产品','err');return}
+var b=document.getElementById('fsb');b.textContent='提交中...';b.disabled=true;
+submitOrder(n,p,em,ad,ms,b,fmsg)
+}
 
 ld();
 </script>
