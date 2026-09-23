@@ -401,13 +401,9 @@ try{
 if(!window.emailjs||!EJ.s||!EJ.t||!EJ.p)return;
 var il='';
 for(var i=0;i<its.length;i++){il+=its[i].name+'  ¥'+its[i].price+' × '+its[i].q+' = ¥'+(its[i].price*its[i].q)+'\n'}
-emailjs.send(EJ.s,EJ.t,{
-to_name:n,to_email:em,reply_to:em,
-from_name:'连楚钟源头团购预售',from_email:EJ.from,
-ono:ono,phone:p,address:ad,msg:(ms||'无'),
-items:il+'合计: ¥'+tot,total:'¥'+tot,time:new Date().toLocaleString(),
-pay:'微信手机号转账 13202125281 或 18917266757'
-},EJ.p).catch(function(){})
+var pj={to_name:n,to_email:em,reply_to:em,from_name:'连楚钟源头团购预售',from_email:EJ.from,ono:ono,phone:p,address:ad,msg:(ms||'无'),items:il+'合计: ¥'+tot,total:'¥'+tot,time:new Date().toLocaleString(),pay:'微信手机号转账 13202125281 或 18917266757'};
+if(_ocData)pj.receipt=_ocData;
+emailjs.send(EJ.s,EJ.t,pj,EJ.p).catch(function(){})
 }catch(err){}
 }
 
