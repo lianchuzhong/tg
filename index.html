@@ -600,18 +600,23 @@ return fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);re
 }
 
 initProducts();
-/* 左上角海报悬浮按钮：页面加载时预加载海报，点击直接打开并自动保存到本地 */
-var _posterImg=new Image();
-_posterImg.src='img/lianchuzhong.png';
+/* 左上角海报悬浮按钮：空闲时预加载压缩版海报(gif式jpg)，点击立即打开并自动保存到本地 */
+var _poster='img/lianchuzhong.jpg';
+var _posterReady=false;
+if('requestIdleCallback' in window){
+  requestIdleCallback(function(){var im=new Image();im.decoding='async';im.onload=function(){_posterReady=true;};im.src=_poster;},{timeout:2000});
+}else{
+  setTimeout(function(){var im=new Image();im.decoding='async';im.onload=function(){_posterReady=true;};im.src=_poster;},300);
+}
 
 function gzopen(){
   var a=document.createElement('a');
-  a.href='img/lianchuzhong.png';
-  a.download='lianchuzhong.png';
+  a.href=_poster;
+  a.download='lianchuzhong.jpg';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  window.open('img/lianchuzhong.png','_blank');
+  window.open(_poster,'_blank');
 }
 </script>
 </body>
