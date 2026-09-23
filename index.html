@@ -229,6 +229,7 @@ function escTxt(s){return (''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 
 function picon(p){
 var ic=p.icon||'📦';
+if(p.video)return '<video class="pimg" src="'+escTxt(p.video)+'" controls muted preload="metadata" onclick="openDetail('+p.id+')"></video>';
 if(p.img)return '<img class="pimg" src="'+escTxt(p.img)+'" alt="'+escTxt(p.name)+'" onclick="openDetail('+p.id+')">';
 if(ic.indexOf('.')>-1)return '<img class="pimg" src="'+escTxt(ic)+'" alt="'+escTxt(p.name)+'" onclick="openDetail('+p.id+')">';
 return '<div class="icon" style="cursor:pointer" onclick="openDetail('+p.id+')">'+ic+'</div>';
@@ -260,7 +261,8 @@ var p=null;for(var i=0;i<PROD.length;i++)if(PROD[i].id===id){p=PROD[i];break}
 if(!p)return;
 var pn=p.name||'';
 var hero='';
-if(p.img)hero='<img class="dm-hero" src="'+escTxt(p.img)+'" alt="'+escTxt(pn)+'">';
+if(p.video)hero='<video class="dm-hero" src="'+escTxt(p.video)+'" controls preload="metadata"></video>';
+else if(p.img)hero='<img class="dm-hero" src="'+escTxt(p.img)+'" alt="'+escTxt(pn)+'">';
 else if(p.icon&&p.icon.indexOf('.')>-1)hero='<img class="dm-hero" src="'+escTxt(p.icon)+'" alt="'+escTxt(pn)+'">';
 var sec='';
 if(p.detail&&p.detail.length){
