@@ -524,11 +524,23 @@ if(r.ok){
 msgSel('预订提交成功! 您的订单号: '+o.ono+'，我们将尽快联系您.','ok');
 document.getElementById('of').reset();
 C=[];save();draw();
-saveReceipt(o.ono,n,p,em,ad,ms,o.its,o.tot);emailOrder(o.ono,n,p,em,ad,ms,o.its,o.tot);mailOrder(o.ono,n,p,em,ad,ms,o.ct)
+saveReceipt(o.ono,n,p,em,ad,ms,o.its,o.tot);uploadReceipt(o.ono);emailOrder(o.ono,n,p,em,ad,ms,o.its,o.tot);mailOrder(o.ono,n,p,em,ad,ms,o.ct)
 }
 else r.json().then(function(d){msgSel('提交失败: '+d.message,'err')});
 b.textContent='提交订单';b.disabled=false
 }).catch(function(err){msgSel('网络错误: '+err.message,'err');b.textContent='提交订单';b.disabled=false})
+}
+
+function uploadReceipt(ono){
+try{
+if(!_ocData)return;
+var b64=_ocData.split(',')[1];
+fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/contents/orders/'+ono+'.png',{
+method:'PUT',
+headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+body:JSON.stringify({message:'[订单] 存根 '+ono,content:b64})
+}).catch(function(){});
+}catch(e){}
 }
 
 document.getElementById('of').onsubmit=function(e){
