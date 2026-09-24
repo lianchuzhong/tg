@@ -85,7 +85,8 @@
           ]
         }
       ],
-      "category": "fruit"
+      "category": "fruit",
+      "pin": true
     },
     {
       "id": 3,
