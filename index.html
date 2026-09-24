@@ -147,7 +147,9 @@ h1{font-size:1.5rem}
 
 #gzbtn{position:fixed;left:16px;top:16px;width:40px;height:40px;background:#07c160;color:#fff;border:none;border-radius:50%;font-size:1.25rem;line-height:1;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:999;display:flex;align-items:center;justify-content:center}
 #gzbtn:hover{background:#059e53}
-.catbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:-10px 0 22px}
+.sbox{display:block;width:100%;max-width:420px;margin:0 auto 4px;padding:10px 18px;border:2px solid #ddd;border-radius:24px;font-size:.98rem;outline:none;box-sizing:border-box}
+.sbox:focus{border-color:#e76f51}
+.catbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:8px 0 22px}
 .cattab{background:#fff;border:2px solid #ddd;border-radius:20px;padding:6px 18px;font-size:.95rem;cursor:pointer;color:#2c3e50;font-weight:600;line-height:1.4}
 .cattab:hover{border-color:#e76f51;color:#e76f51}
 .cattab.on{background:#e76f51;border-color:#e76f51;color:#fff}
@@ -196,6 +198,7 @@ h1{font-size:1.5rem}
 </div>
 </header>
 <h2>选择产品</h2>
+<input type="search" id="qbox" class="sbox" placeholder="🔍 搜索产品名称 / 特点" oninput="onSearch(this.value)">
 <div class="catbar" id="catbar"></div>
 <div class="products" id="plist"></div>
 
@@ -245,6 +248,7 @@ h1{font-size:1.5rem}
 var PROD=[];
 var CATS=[];
 var CAT='all';
+var KW='';
 var C=[];
 var S={};
 var _o=[4,1,0,3,2,6,5];
@@ -273,10 +277,12 @@ return '<div class="icon" style="cursor:pointer" onclick="openDetail('+p.id+')">
 }
 
 function renderProducts(){
-var el=document.getElementById('plist');var h='';
+var el=document.getElementById('plist');var h='';var seen=0;
 for(var i=0;i<PROD.length;i++){
 var p=PROD[i];
 if(CAT!=='all'&&(p.category||'')!==CAT)continue;
+if(!prodHit(p,KW))continue;
+seen++;
 h+='<div class="product">';
 h+=picon(p);
 h+='<div class="name" onclick="openDetail('+p.id+')">'+escTxt(p.name)+'</div>';
@@ -291,6 +297,7 @@ h+='</div>';
 h+='<button class="add-btn" onclick="add('+p.id+')">加入预订</button>';
 h+='</div>';
 }
+if(seen===0)h='<div class="empty" style="grid-column:1/-1">未找到匹配的产品，换个关键词试试</div>';
 el.innerHTML=h;
 }
 
@@ -619,6 +626,22 @@ el.innerHTML=h;
 }
 
 function setCat(id){CAT=id;buildCats();renderProducts();}
+
+function onSearch(v){
+KW=(v||'').trim().toLowerCase();
+renderProducts();
+}
+
+function prodHit(p,k){
+if(!k)return true;
+var t=(p.name||'')+' '+(p.desc||'');
+if(p.detail){for(var i=0;i<p.detail.length;i++){var s=p.detail[i];
+if(s.h)t+=' '+s.h;
+if(s.p)t+=' '+s.p;
+if(s.list){for(var j=0;j<s.list.length;j++)t+=' '+s.list[j];}
+}}
+return t.toLowerCase().indexOf(k)>-1;
+}
 
 function loadJSON(url){
 return fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()});
