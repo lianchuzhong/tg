@@ -147,6 +147,10 @@ h1{font-size:1.5rem}
 
 #gzbtn{position:fixed;left:16px;top:16px;width:40px;height:40px;background:#07c160;color:#fff;border:none;border-radius:50%;font-size:1.25rem;line-height:1;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:999;display:flex;align-items:center;justify-content:center}
 #gzbtn:hover{background:#059e53}
+.catbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:-10px 0 22px}
+.cattab{background:#fff;border:2px solid #ddd;border-radius:20px;padding:6px 18px;font-size:.95rem;cursor:pointer;color:#2c3e50;font-weight:600;line-height:1.4}
+.cattab:hover{border-color:#e76f51;color:#e76f51}
+.cattab.on{background:#e76f51;border-color:#e76f51;color:#fff}
 </style>
 </head>
 <body>
@@ -192,6 +196,7 @@ h1{font-size:1.5rem}
 </div>
 </header>
 <h2>选择产品</h2>
+<div class="catbar" id="catbar"></div>
 <div class="products" id="plist"></div>
 
 <div class="cart">
@@ -238,6 +243,8 @@ h1{font-size:1.5rem}
 
 <script>
 var PROD=[];
+var CATS=[];
+var CAT='all';
 var C=[];
 var S={};
 var _o=[4,1,0,3,2,6,5];
@@ -269,6 +276,7 @@ function renderProducts(){
 var el=document.getElementById('plist');var h='';
 for(var i=0;i<PROD.length;i++){
 var p=PROD[i];
+if(CAT!=='all'&&(p.category||'')!==CAT)continue;
 h+='<div class="product">';
 h+=picon(p);
 h+='<div class="name" onclick="openDetail('+p.id+')">'+escTxt(p.name)+'</div>';
@@ -585,15 +593,32 @@ submitOrder(n,p,em,ad,ms,b,fmsg)
 function initProducts(){
 loadJSON('products.json?v='+Date.now()).then(function(d){
 PROD=d.products||[];
+CATS=d.categories||[];
+CAT='all';
 S={};
 for(var i=0;i<PROD.length;i++){S[PROD[i].id]=0}
 renderProducts();
+buildCats();
 ld();
 }).catch(function(err){
 msg('产品加载失败: '+err.message,'err');
 renderProducts();
 });
 }
+
+function escA(s){return (''+s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
+
+function buildCats(){
+var el=document.getElementById('catbar');if(!el)return;
+var h='<button class="cattab'+(CAT==='all'?' on':'')+'" onclick="setCat(\'all\')">全部</button>';
+for(var i=0;i<CATS.length;i++){
+var c=CATS[i];
+h+='<button class="cattab'+(CAT===(c.id||'')?' on':'')+'" onclick="setCat(\''+escA(c.id)+'\')">'+escTxt(c.name||c.id)+'</button>';
+}
+el.innerHTML=h;
+}
+
+function setCat(id){CAT=id;buildCats();renderProducts();}
 
 function loadJSON(url){
 return fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()});
