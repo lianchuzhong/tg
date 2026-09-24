@@ -170,7 +170,7 @@ h1{font-size:1.5rem}
 <div class="ftitle">填写收货信息</div>
 <div class="ffield"><input type="text" id="fn" required placeholder="姓名 *"></div>
 <div class="ffield"><input type="tel" id="fp" required placeholder="电话 *"></div>
-<div class="ffield"><input type="email" id="fe" required placeholder="邮箱 *"></div>
+<div class="ffield"><input type="email" id="fe" placeholder="邮箱(选填)"></div>
 <div class="ffield"><input type="text" id="fa" required placeholder="收货地址 *"></div>
 <div class="ffield"><textarea id="fm" placeholder="留言(可选)"></textarea></div>
 <button type="submit" class="fsubmit" id="fsb">提交订单</button>
@@ -216,7 +216,7 @@ h1{font-size:1.5rem}
 <form id="of">
 <div class="field"><label>姓名 *</label><input type="text" id="n" required placeholder="请输入收货人姓名"></div>
 <div class="field"><label>电话 *</label><input type="tel" id="p" required placeholder="请输入联系电话"></div>
-<div class="field"><label>邮箱 *</label><input type="email" id="e" required placeholder="请输入邮箱地址"></div>
+<div class="field"><label>邮箱(选填)</label><input type="email" id="e" placeholder="选填，没有邮箱可不填"></div>
 <div class="field"><label>收货地址 *</label><input type="text" id="a" required placeholder="请输入详细收货地址"></div>
 <div class="field"><label>留言</label><textarea id="m" placeholder="其他要求或备注"></textarea></div>
 <button type="submit" class="submit" id="sb">提交订单</button>
@@ -517,7 +517,7 @@ y+=ih
 }
 row('姓名: ',n);
 row('电话: ',p);
-row('邮箱: ',em);
+row('邮箱: ',em||'未填写');
 ctx.fillStyle='#7f8c8d';ctx.fillText('地址: ',pad,y);
 ctx.fillStyle='#2d3436';
 for(k=0;k<addrLines.length;k++){ctx.fillText(addrLines[k],pad+90,y);y+=ih}
@@ -585,7 +585,7 @@ return {ono:ono,its:its,ct:ct,tot:tot}
 
 function submitOrder(n,p,em,ad,ms,b,msgSel){
 var o=buildOrder();
-var bd='**订单号:** '+o.ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+em+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+o.ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
+var bd='**订单号:** '+o.ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+(em||'未填写')+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+o.ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
 fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/issues',{
 method:'POST',
 headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
@@ -609,7 +609,7 @@ var p=document.getElementById('p').value.trim();
 var em=document.getElementById('e').value.trim();
 var ad=document.getElementById('a').value.trim();
 var ms=document.getElementById('m').value.trim();
-if(!n||!p||!em||!ad){msg('请填写所有必填字段','err');return}
+if(!n||!p||!ad){msg('请填写所有必填字段','err');return}
 if(C.length===0){msg('请先加入至少一个预订产品','err');return}
 var b=document.getElementById('sb');b.textContent='提交中...';b.disabled=true;
 submitOrder(n,p,em,ad,ms,b,msg)
@@ -623,7 +623,7 @@ var em=document.getElementById('fe').value.trim();
 var ad=document.getElementById('fa').value.trim();
 var ms=document.getElementById('fm').value.trim();
 function fmsg(t,c){var el=document.getElementById('fsm');el.textContent=t;el.className='fmsg show '+c;setTimeout(function(){el.className='fmsg'},6000)}
-if(!n||!p||!em||!ad){fmsg('请填写所有必填字段','err');return}
+if(!n||!p||!ad){fmsg('请填写所有必填字段','err');return}
 if(C.length===0){fmsg('请先加入至少一个预订产品','err');return}
 var b=document.getElementById('fsb');b.textContent='提交中...';b.disabled=true;
 submitOrder(n,p,em,ad,ms,b,fmsg)
