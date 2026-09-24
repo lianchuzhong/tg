@@ -44,7 +44,8 @@
       ],
       "img": "",
       "video": "",
-      "category": "fruit"
+      "category": "fruit",
+      "pin": true
     },
     {
       "id": 2,
