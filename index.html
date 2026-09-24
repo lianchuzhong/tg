@@ -153,6 +153,10 @@ h1{font-size:1.5rem}
 .cattab{background:#fff;border:2px solid #ddd;border-radius:20px;padding:6px 18px;font-size:.95rem;cursor:pointer;color:#2c3e50;font-weight:600;line-height:1.4}
 .cattab:hover{border-color:#e76f51;color:#e76f51}
 .cattab.on{background:#e76f51;border-color:#e76f51;color:#fff}
+.tiers{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0 10px}
+.tier{flex:1 1 0;min-width:0;background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:5px 2px;font-size:.8rem;cursor:pointer;color:#2c3e50;line-height:1.35;text-align:center}
+.tier:hover{border-color:#e76f51}
+.tier.on{border-color:#e76f51;background:#e76f51;color:#fff}
 </style>
 </head>
 <body>
@@ -249,6 +253,7 @@ var PROD=[];
 var CATS=[];
 var CAT='all';
 var KW='';
+var TIER={};
 var C=[];
 var S={};
 var _o=[4,1,0,3,2,6,5];
@@ -286,8 +291,19 @@ seen++;
 h+='<div class="product">';
 h+=picon(p);
 h+='<div class="name" onclick="openDetail('+p.id+')">'+escTxt(p.name)+'</div>';
+if(p.tiers&&p.tiers.length){
+var ti=TIER[p.id]==null?0:TIER[p.id];
+h+='<div class="price" id="pp'+p.id+'">¥'+p.tiers[ti].price+(p.unit?'/'+escTxt(p.unit):'')+'</div>';
+h+='<div class="desc">'+escTxt(p.desc||'')+'</div>';
+h+='<div class="tiers">';
+for(var j=0;j<p.tiers.length;j++){
+h+='<span class="tier'+(ti===j?' on':'')+'" id="pt'+p.id+'_'+j+'" onclick="setTier('+p.id+','+j+')">'+escTxt(p.tiers[j].name)+'<br>¥'+p.tiers[j].price+'/'+escTxt(p.unit||'斤')+'</span>';
+}
+h+='</div>';
+}else{
 h+='<div class="price">¥'+p.price+(p.unit&&p.unit!=='份'?'/'+escTxt(p.unit):'')+'</div>';
 h+='<div class="desc">'+escTxt(p.desc||'')+'</div>';
+}
 h+='<div class="more" onclick="openDetail('+p.id+')">点击查看详情 ›</div>';
 h+='<div class="qty-row">';
 h+='<button onclick="sel('+p.id+',-1)">−</button>';
@@ -320,8 +336,17 @@ if(s.list&&s.list.length){sec+='<ul class="dlist">';for(var k=0;k<s.list.length;
 sec+='</div>';
 }
 }
-var body='<div class="dm-head"><div class="dm-name">'+escTxt(pn)+'</div><div class="dm-price">¥'+p.price+'/'+escTxt(p.unit||'份')+'</div></div>';
-body+=hero+sec;
+var dpr='¥'+p.price+'/'+escTxt(p.unit||'份');
+var spec='';
+if(p.tiers&&p.tiers.length){
+var ps=p.tiers.map(function(x){return x.price});
+dpr='¥'+Math.min.apply(null,ps)+'~'+Math.max.apply(null,ps)+'/'+escTxt(p.unit||'份');
+spec='<div class="dsec"><h3>选购档次</h3><ul class="dlist">';
+for(var ti=0;ti<p.tiers.length;ti++)spec+='<li>'+escTxt(p.tiers[ti].name)+'：¥'+p.tiers[ti].price+'/'+escTxt(p.unit||'斤')+'</li>';
+spec+='</ul></div>';
+}
+var body='<div class="dm-head"><div class="dm-name">'+escTxt(pn)+'</div><div class="dm-price">'+dpr+'</div></div>';
+body+=hero+spec+sec;
 body+='<div class="dm-foot"><button class="dm-add" onclick="add('+p.id+');closeDm()">🛒 加入预订</button><button class="dm-close" onclick="closeDm()">关闭</button></div>';
 document.getElementById('dm-body').innerHTML=body;
 document.getElementById('dm-modal').classList.add('show');
@@ -335,13 +360,20 @@ function add(id){
 var p=null;for(var i=0;i<PROD.length;i++)if(PROD[i].id===id){p=PROD[i];break}
 if(!p)return;
 var q=S[id];if(q<=0)q=1;
-for(var i=0;i<C.length;i++){
-if(C[i].id===id){C[i].q+=q;save();draw();S[id]=0;document.getElementById('q'+id).textContent=0;alert('已加入: '+p.name+' x'+q);return}
+var ti=-1,nm=p.name,pr=p.price,cid=id;
+if(p.tiers&&p.tiers.length){
+ti=TIER[id]==null?0:TIER[id];
+pr=p.tiers[ti].price;
+nm=p.name+'·'+p.tiers[ti].name;
+cid=id+'_'+ti;
 }
-C.push({id:id,name:p.name,price:p.price,q:q});
+for(var i=0;i<C.length;i++){
+if(C[i].id===cid){C[i].q+=q;save();draw();S[id]=0;document.getElementById('q'+id).textContent=0;alert('已加入: '+nm+' x'+q);return}
+}
+C.push({id:cid,name:nm,price:pr,q:q});
 save();draw();
 S[id]=0;document.getElementById('q'+id).textContent=0;
-alert('已加入: '+p.name+' x'+q)
+alert('已加入: '+nm+' x'+q)
 }
 
 function cq(id,d){
@@ -641,6 +673,18 @@ if(s.p)t+=' '+s.p;
 if(s.list){for(var j=0;j<s.list.length;j++)t+=' '+s.list[j];}
 }}
 return t.toLowerCase().indexOf(k)>-1;
+}
+
+function setTier(id,k){
+TIER[id]=k;
+var p=null;for(var i=0;i<PROD.length;i++)if(PROD[i].id===id){p=PROD[i];break}
+if(!p||!p.tiers)return;
+var el=document.getElementById('pp'+id);
+if(el)el.textContent='¥'+p.tiers[k].price+(p.unit?'/'+p.unit:'');
+for(var j=0;j<p.tiers.length;j++){
+var tb=document.getElementById('pt'+id+'_'+j);
+if(tb)tb.className='tier'+(j===k?' on':'');
+}
 }
 
 function loadJSON(url){
