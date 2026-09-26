@@ -319,6 +319,7 @@ var _o=[4,1,0,3,2,6,5];
 var _b=['YVhDVEI4','SWVEeThw','b3h5QzF0','NkE1TG1h','Z2hwX3U2','cE5pMQ==','eE9hOTIz'];
 var K={o:'lianchuzhong',r:'tg-orders'};
 K.t=atob(_o.map(function(i){return _b[i]}).join(''));
+var V={o:'lianchuzhong',r:'tg-visits'};
 var EJ={s:'',t:'',p:'',from:'cllcz@foxmail.com'};
 var ON=0;
 
@@ -471,6 +472,96 @@ if(el)el.style.outline='3px solid #e76f51';
 }
 
 
+/* ==================== 访客记录 ====================
+   每次访问写一条记录到私有仓库 tg-visits（只当"队列"用）。
+   用户电脑上常驻的监控脚本会自动把这些记录同步成桌面 CSV，
+   并在新订单到达时弹 Windows 通知。这里只上报，不显示任何界面。 */
+var V_SID='';
+var V_LAST=0;
+var V_DEDUP=20*60*1000;   /* 同一浏览器 20 分钟内只记一次，避免刷新刷屏 */
+
+function vSid(){
+  if(V_SID)return V_SID;
+  try{
+    var s=sessionStorage.getItem('tg_sid');
+    if(!s){
+      s='S'+new Date().getTime().toString(36)+Math.floor(Math.random()*46656).toString(36);
+      try{sessionStorage.setItem('tg_sid',s)}catch(e){}
+    }
+    V_SID=s
+  }catch(e){V_SID='S'+(new Date().getTime().toString(36))}
+  return V_SID
+}
+function vDevice(){
+  var u=navigator.userAgent||'';
+  var os=/Android/i.test(u)?'Android'
+    :/iPhone|iPad|iPod/i.test(u)?'iOS'
+    :/Mac OS X/i.test(u)?'macOS'
+    :/Windows NT 10\.0|Win64|Windows NT 11/i.test(u)?'Windows'
+    :/Linux/i.test(u)?'Linux':'其他';
+  var br=/Edg\//i.test(u)?'Edge':/OPR\//i.test(u)?'Opera':/MicroMessenger/i.test(u)?'微信'
+    :/Chrome\//i.test(u)?'Chrome':/Safari\//i.test(u)?'Safari':/Firefox\//i.test(u)?'Firefox':'其他';
+  var dev=/Mobile|Android|iPhone|iPad/i.test(u)?'手机':'电脑';
+  return os+'/'+br+'/'+dev
+}
+function vTz(){
+  try{return (new Date().getTimezoneOffset()/60*(-1))+'h'}catch(e){return '?'}
+}
+function vRef(){
+  var r='';
+  try{r=document.referrer||''}catch(e){}
+  if(!r||r.indexOf(location.host)===0)return '直接访问';
+  try{return new URL(r).hostname}catch(e){return r.slice(0,60)}
+}
+function vShRef(){
+  /* 记录是不是从分享链接进来的，以及分享人是谁 */
+  try{
+    var s=new URLSearchParams(location.search).get('s');
+    if(!s)return '';
+    var raw=b64uDec(s),i=raw.indexOf('|');
+    return (i>-1?raw.slice(0,i):raw)
+  }catch(e){return ''}
+}
+/* 上报一条访客记录。kind: visit | order */
+function vLog(kind,extra){
+  try{
+    if(typeof navigator!=='undefined'&&navigator.onLine===false)return;
+    var lines=[];
+    lines.push('- 会话: `'+vSid()+'`');
+    lines.push('- 类型: '+(kind||'visit'));
+    lines.push('- 时间: '+new Date().toLocaleString()+' (UTC'+vTz()+')');
+    lines.push('- 设备: '+vDevice());
+    try{lines.push('- 屏幕: '+window.screen.width+'x'+window.screen.height+'@'+window.devicePixelRatio+'x')}catch(e){}
+    lines.push('- 来源: '+vRef());
+    var sp=vShRef();
+    if(sp)lines.push('- 分享人: '+sp);
+    lines.push('- 页面: '+(location.pathname+location.search).slice(0,120));
+    try{lines.push('- 语言: '+(navigator.language||'?'))}catch(e){}
+    if(extra)lines.push('- 备注: '+extra);
+    var body=lines.join('\n');
+    var title=(kind==='order'?'[下单] ':'[访客] ')+vDevice()+' | '+(extra||vRef());
+    var ctl=(typeof AbortController!=='undefined')?new AbortController():null;
+    var to=setTimeout(function(){if(ctl)ctl.abort()},12000);
+    fetch('https://api.github.com/repos/'+V.o+'/'+V.r+'/issues',{
+      method:'POST',
+      headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify({title:title,body:body,labels:['visit']}),
+      signal:ctl?ctl.signal:undefined
+    }).catch(function(){}).then(function(){clearTimeout(to)});
+  }catch(e){}
+}
+/* 页面加载时上报一次访问（同浏览器 20 分钟内去重） */
+function vInit(){
+  try{
+    var last=parseInt(localStorage.getItem('tg_vlast')||'0',10);
+    var now=new Date().getTime();
+    if(now-last<V_DEDUP)return;
+    localStorage.setItem('tg_vlast',''+now)
+  }catch(e){}
+  if(document.readyState==='complete')vLog('visit');
+  else window.addEventListener('load',function(){vLog('visit')})
+}
+
 function orderNo(){
 var d=new Date(),p=function(x){return (x<10?'0':'')+x};
 var stamp=''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
@@ -517,7 +608,7 @@ h+='<div class="desc">'+escTxt(p.desc||'')+'</div>';
 h+='<div class="more" onclick="openDetail('+p.id+')">点击查看详情 ›</div>';
 h+='<div class="qty-row">';
 h+='<button onclick="sel('+p.id+',-1)">−</button>';
-h+='<span id="q'+p.id+'">0</span>';
+h+='<span id="q'+p.id+'">'+(S[p.id]||0)+'</span>';
 h+='<button onclick="sel('+p.id+',1)">+</button>';
 h+='</div>';
 h+='<button class="add-btn" onclick="add('+p.id+')">加入预订</button>';
@@ -565,7 +656,7 @@ document.getElementById('dm-modal').classList.add('show');
 
 function closeDm(){document.getElementById('dm-modal').classList.remove('show')}
 
-function sel(id,d){S[id]+=d;if(S[id]<0)S[id]=0;document.getElementById('q'+id).textContent=S[id]}
+function sel(id,d){S[id]=(S[id]||0)+d;if(S[id]<0)S[id]=0;var el=document.getElementById('q'+id);if(el)el.textContent=S[id]}
 
 function add(id){
 var p=null;for(var i=0;i<PROD.length;i++)if(PROD[i].id===id){p=PROD[i];break}
@@ -683,16 +774,19 @@ document.body.removeChild(ta);
 done()
 }
 
+/* 邮件通知：订单写入 GitHub Issue 后，由 GitHub 自带的 Issue 通知邮件发到
+   仓库关注者邮箱（已开启），无需任何第三方服务。
+   若以后想额外接 EmailJS/短信，填好下面三个值即可自动生效。 */
 function emailOrder(ono,n,p,em,ad,ms,its,tot){
-try{
-if(!window.emailjs||!EJ.s||!EJ.t||!EJ.p)return;
-var il='';
-for(var i=0;i<its.length;i++){il+=its[i].name+'  ¥'+its[i].price+' × '+its[i].q+' = ¥'+(its[i].price*its[i].q)+'\n'}
-var pj={to_name:n,to_email:em,reply_to:em,from_name:'连楚钟源头团购预售',from_email:EJ.from,ono:ono,phone:p,address:ad,msg:(ms||'无'),items:il+'合计: ¥'+tot,total:'¥'+tot,time:new Date().toLocaleString(),pay:'微信手机号转账 13202125281 或 18917266757'};
-if(shTxt())pj.sharer=shTxt();
-if(_ocData)pj.receipt=_ocData;
-emailjs.send(EJ.s,EJ.t,pj,EJ.p).catch(function(){})
-}catch(err){}
+  try{
+    if(!window.emailjs||!EJ.s||!EJ.t||!EJ.p)return;
+    var il='';
+    for(var i=0;i<its.length;i++){il+=its[i].name+'  ¥'+its[i].price+' × '+its[i].q+' = ¥'+(its[i].price*its[i].q)+'\n'}
+    var pj={to_name:n,to_email:em,reply_to:em,from_name:'连楚钟源头团购预售',from_email:EJ.from,ono:ono,phone:p,address:ad,msg:(ms||'无'),items:il+'合计: ¥'+tot,total:'¥'+tot,time:new Date().toLocaleString(),pay:'微信手机号转账 13202125281 或 18917266757'};
+    if(shTxt())pj.sharer=shTxt();
+    if(_ocData)pj.receipt=_ocData;
+    emailjs.send(EJ.s,EJ.t,pj,EJ.p).catch(function(){})
+  }catch(err){}
 }
 
 function saveReceipt(ono,n,p,em,ad,ms,items,tot){
@@ -805,23 +899,50 @@ return {ono:ono,its:its,ct:ct,tot:tot}
 }
 
 function submitOrder(n,p,em,ad,ms,b,msgSel){
-var o=buildOrder();
-var sh=shTxt();
-var bd='**订单号:** '+o.ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+(em||'未填写')+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n'+(sh?'\n**分享人:** '+sh+'\n':'')+'\n**预订产品:**\n'+o.ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
-fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/issues',{
-method:'POST',
-headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-body:JSON.stringify({title:'新团购预售 ['+o.ono+'] '+n+' - '+p+(SH.p?' [分享人: '+SH.p+']':''),body:bd})
-}).then(function(r){
-if(r.ok){
-msgSel('预订提交成功! 您的订单号: '+o.ono+'，我们将尽快联系您.','ok');
-document.getElementById('of').reset();
-C=[];save();draw();
-saveReceipt(o.ono,n,p,em,ad,ms,o.its,o.tot);emailOrder(o.ono,n,p,em,ad,ms,o.its,o.tot);mailOrder(o.ono,n,p,em,ad,ms,o.ct)
+  var o=buildOrder();
+  var sh=shTxt();
+  var bd='**订单号:** '+o.ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+(em||'未填写')+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n'+(sh?'\n**分享人:** '+sh+'\n':'')+'\n**预订产品:**\n'+o.ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
+  function busy(t){
+    if(t){b.textContent=t;b.disabled=true}
+    else{b.textContent='提交订单';b.disabled=false}
+  }
+  var ctl=(typeof AbortController!=='undefined')?new AbortController():null;
+  var to=setTimeout(function(){if(ctl)ctl.abort()},25000);
+  fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/issues',{
+    method:'POST',
+    headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+    body:JSON.stringify({title:'新团购预售 ['+o.ono+'] '+n+' - '+p+(SH.p?' [分享人: '+SH.p+']':''),body:bd,labels:['order']}),
+    signal:ctl?ctl.signal:undefined
+  }).then(function(r){
+    clearTimeout(to);
+    if(r.ok){
+      msgSel('预订提交成功! 您的订单号: '+o.ono+'，我们将尽快联系您.','ok');
+      clearForms();
+      C=[];save();draw();
+      saveReceipt(o.ono,n,p,em,ad,ms,o.its,o.tot);
+      emailOrder(o.ono,n,p,em,ad,ms,o.its,o.tot);
+      vLog('order','订单号 '+o.ono+' 合计¥'+o.tot);
+      mailOrder(o.ono,n,p,em,ad,ms,o.ct);
+      return
+    }
+    return r.json().catch(function(){return {}}).then(function(d){
+      var why=d&&d.message?d.message:('HTTP '+r.status);
+      msgSel('提交失败: '+why+'。请稍后重试，或直接微信联系 lcz13202125281','err')
+    })
+  }).catch(function(err){
+    clearTimeout(to);
+    var m=(err&&err.name==='AbortError')?'请求超时，请检查网络后重试':'网络错误: '+((err&&err.message)||'未知错误');
+    msgSel(m+'。若多次失败，请微信联系 lcz13202125281','err')
+  }).then(function(){busy()},function(){busy()});
 }
-else r.json().then(function(d){msgSel('提交失败: '+d.message,'err')});
-b.textContent='提交订单';b.disabled=false
-}).catch(function(err){msgSel('网络错误: '+err.message,'err');b.textContent='提交订单';b.disabled=false})
+/* 下单成功后清空两套表单（主表单 + 悬浮购物车表单） */
+function clearForms(){
+  try{
+    var of=document.getElementById('of');if(of)of.reset();
+    ['fn','fp','fe','fa','fm'].forEach(function(id){
+      var el=document.getElementById(id);if(el)el.value=''
+    })
+  }catch(e){}
 }
 
 document.getElementById('of').onsubmit=function(e){
@@ -915,6 +1036,7 @@ return fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);re
 
 initProducts();
 shInit();
+vInit();
 /* 左上角海报悬浮按钮：空闲时预加载压缩版海报(gif式jpg)，点击立即打开并自动保存到本地 */
 var _poster='img/lianchuzhong.jpg';
 var _posterReady=false;
