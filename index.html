@@ -158,6 +158,41 @@ h1{font-size:1.5rem}
 .tier{flex:1 1 0;min-width:0;background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:5px 2px;font-size:.8rem;cursor:pointer;color:#2c3e50;line-height:1.35;text-align:center}
 .tier:hover{border-color:#e76f51}
 .tier.on{border-color:#e76f51;background:#e76f51;color:#fff}
+.sbtn{width:100%;padding:10px;margin-top:8px;background:#fff;color:#e76f51;border:2px solid #e76f51;border-radius:8px;font-size:.95rem;cursor:pointer;font-weight:bold}
+.sbtn:hover{background:#e76f51;color:#fff}
+.dm-foot{flex-wrap:wrap}
+.dm-foot .dm-sh{background:#2980b9}
+.dm-foot .dm-sh:hover{background:#2471a3}
+#sh-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:4000;display:none;align-items:center;justify-content:center;padding:20px}
+#sh-modal.show{display:flex}
+.sh-box{background:#fff;border-radius:12px;max-width:460px;width:100%;max-height:92vh;overflow:auto;padding:22px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.sh-box h3{font-size:1.15rem;color:#2d3436;margin-bottom:4px}
+.sh-box .sh-sub{color:#636e72;font-size:.88rem;margin-bottom:14px;line-height:1.7}
+.sh-box .sh-sub b{color:#e76f51}
+.sh-field{margin-bottom:12px}
+.sh-field label{display:block;font-size:.88rem;font-weight:600;margin-bottom:6px;color:#2d3436}
+.sh-field input{width:100%;padding:11px;border:2px solid #ddd;border-radius:8px;font-size:1rem;background:#fff}
+.sh-field input:focus{outline:none;border-color:#e76f51}
+.sh-field input[readonly]{border-style:dashed;border-color:#e76f51;background:#fef9f7;color:#2d3436;font-size:.85rem}
+.sh-acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.sh-acts button{flex:1 1 0;min-width:110px;padding:11px;border:none;border-radius:8px;font-size:.95rem;font-weight:bold;cursor:pointer;color:#fff;background:#2980b9}
+.sh-acts button:hover{filter:brightness(.92)}
+.sh-acts .gray{background:#b2bec3}
+.sh-acts .green{background:#27ae60}
+.sh-msg{font-size:.85rem;text-align:center;padding:8px 0 0;display:none;font-weight:bold}
+.sh-msg.show{display:block}
+.sh-msg.ok{color:#27ae60}
+.sh-msg.err{color:#c0392b}
+#shbar{display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 14px;margin-bottom:16px;font-size:.9rem;color:#9a5b0b;align-items:center;gap:10px;flex-wrap:wrap}
+#shbar.show{display:flex}
+#shbar .sb-txt{flex:1;min-width:170px;line-height:1.7}
+#shbar .sb-txt b{color:#e76f51}
+#shbar button{background:#e76f51;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:.82rem;cursor:pointer}
+#shbar button:hover{background:#d65a40}
+@media(max-width:768px){
+.sh-acts button{min-width:100%}
+#shbar button{flex:1}
+}
 </style>
 </head>
 <body>
@@ -192,6 +227,24 @@ h1{font-size:1.5rem}
 <div id="dm-modal">
 <div class="dm-box" id="dm-body"></div>
 </div>
+<div id="sh-modal">
+<div class="sh-box">
+<h3 id="shTitle">分享产品</h3>
+<div class="sh-sub" id="shSub">填写手机号码和邮箱即可分享，好友通过你的链接下单后，订单会自动备注你的联系方式。</div>
+<div class="sh-field"><label>我的手机号码 *</label><input type="tel" id="shp" inputmode="tel" placeholder="请输入手机号码" oninput="shRender()"></div>
+<div class="sh-field"><label>我的邮箱 *</label><input type="email" id="she" inputmode="email" placeholder="请输入邮箱" oninput="shRender()"></div>
+<div class="sh-field" id="shLinkBox" style="display:none;margin-bottom:0">
+<label>我的专属分享链接</label>
+<input type="text" id="shurl" readonly onclick="this.select()">
+</div>
+<div class="sh-acts">
+<button class="green" id="shCopyBtn" onclick="shCopy()">保存并复制链接</button>
+<button id="shNativeBtn" onclick="shNative()">分享给好友</button>
+<button class="gray" onclick="shClose()">关闭</button>
+</div>
+<div id="shMsg" class="sh-msg"></div>
+</div>
+</div>
 <div class="container">
 <header>
 <h1>连楚钟源头团购预售</h1>
@@ -202,6 +255,11 @@ h1{font-size:1.5rem}
 <span>苹果iMessage: +86 13202125281</span>
 </div>
 </header>
+<div id="shbar">
+<span class="sb-txt" id="sbtxt"></span>
+<button onclick="shOpen(-1)">分享给好友</button>
+<button onclick="shDrop()">取消分享人</button>
+</div>
 <h2>选择产品</h2>
 <input type="search" id="qbox" class="sbox" placeholder="🔍 搜索产品名称 / 特点" oninput="onSearch(this.value)">
 <div class="catbar" id="catbar"></div>
@@ -264,6 +322,155 @@ K.t=atob(_o.map(function(i){return _b[i]}).join(''));
 var EJ={s:'',t:'',p:'',from:'cllcz@foxmail.com'};
 var ON=0;
 
+/* ==================== 分享功能 ====================
+   任何人只需填写手机号 + 邮箱即可分享任意产品，链接里带分享人身份；
+   好友通过链接下单时，订单备注与订单存根自动附上分享人联系方式。 */
+var SH={p:'',e:'',id:-1};
+var SH_KEY='tg_share';
+
+function b64uEnc(s){
+var b=btoa(unescape(encodeURIComponent(s)));
+return b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')
+}
+function b64uDec(s){
+s=(''+s).replace(/-/g,'+').replace(/_/g,'/');
+while(s.length%4)s+='=';
+return decodeURIComponent(escape(atob(s)))
+}
+function shValid(p,e){
+if(!p||!e)return false;
+if(!/^[0-9+\-\s()]{6,20}$/.test(p))return false;
+return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)
+}
+function shStore(p,e){
+SH.p=p;SH.e=e;
+try{localStorage.setItem(SH_KEY,JSON.stringify({p:p,e:e,t:Date.now()}))}catch(err){}
+}
+function shLoad(){
+try{
+var o=JSON.parse(localStorage.getItem(SH_KEY)||'null');
+if(o&&o.p&&shValid(o.p,o.e||'')){SH.p=o.p;SH.e=o.e||'';return true}
+}catch(e){}
+return false
+}
+function shDrop(){
+SH.p='';SH.e='';
+try{localStorage.removeItem(SH_KEY)}catch(e){}
+shBar();
+try{var u=new URL(location.href);u.searchParams.delete('s');history.replaceState(null,'',u.pathname+u.search)}catch(e){}
+}
+/* 分享人联系方式文本，用于订单备注与存根 */
+function shTxt(){
+if(!SH.p)return '';
+return '电话: '+SH.p+(SH.e?'  邮箱: '+SH.e:'')
+}
+function shBar(){
+var el=document.getElementById('shbar');
+if(!el)return;
+if(!SH.p){el.className='';return}
+document.getElementById('sbtxt').innerHTML='本单由分享人推荐：<b>'+escTxt(SH.p)+'</b>'+(SH.e?'（邮箱 '+escTxt(SH.e)+'）':'')+'，下单后我们会把订单情况反馈给 TA。';
+el.className='show'
+}
+function shLinkOf(p,e,id){
+var u=location.origin+location.pathname+'?s='+b64uEnc(p+'|'+e);
+if(id!=null&&id>=0)u+='&p='+id;
+return u
+}
+function shCur(){
+var p=document.getElementById('shp').value.trim();
+var e=document.getElementById('she').value.trim();
+return {p:p,e:e,ok:shValid(p,e)}
+}
+function shRender(){
+var c=shCur();
+var box=document.getElementById('shLinkBox');
+if(box)box.style.display=c.ok?'block':'none';
+if(c.ok)document.getElementById('shurl').value=shLinkOf(c.p,c.e,SH.id);
+document.getElementById('shCopyBtn').textContent=c.ok?'复制链接':'保存并复制链接'
+}
+function shMsg(t,c){
+var el=document.getElementById('shMsg');
+el.textContent=t;el.className='sh-msg'+(t?' show '+c:'');
+if(t)setTimeout(function(){el.className='sh-msg'},5000)
+}
+function shOpen(id){
+SH.id=(id==null?-1:parseInt(id,10));
+var p=null;
+if(SH.id>=0)for(var i=0;i<PROD.length;i++)if(PROD[i].id===SH.id){p=PROD[i];break}
+document.getElementById('shTitle').textContent=p?('分享：'+p.name):'分享团购';
+document.getElementById('shSub').innerHTML=p?('好友点击链接即可查看并预订「<b>'+escTxt(p.name)+'</b>」，TA 的订单会自动备注你的联系方式。'):'填写手机号码和邮箱即可分享，好友通过你的链接下单后，订单会自动备注你的联系方式。';
+var sv=shLoad();
+document.getElementById('shp').value=sv?sv.p:'';document.getElementById('she').value=sv?sv.e:'';
+shMsg('');
+shRender();
+document.getElementById('sh-modal').classList.add('show')
+}
+function shClose(){document.getElementById('sh-modal').classList.remove('show')}
+function shSave(){
+var c=shCur();
+if(!c.ok){shMsg('请填写正确的手机号码和邮箱','err');return false}
+shStore(c.p,c.e);
+shBar();
+return true
+}
+function shFallback(u,done){
+var ta=document.createElement('textarea');ta.value=u;
+document.body.appendChild(ta);ta.select();
+try{document.execCommand('copy')}catch(e){}
+document.body.removeChild(ta);
+done()
+}
+function shCopy(){
+if(!shSave())return;
+shRender();
+var u=document.getElementById('shurl').value;
+var b=document.getElementById('shCopyBtn');
+var t=b.textContent;
+function done(){b.textContent='已复制';shMsg('链接已复制，发给好友即可','ok');setTimeout(function(){b.textContent=t},1800)}
+if(navigator.clipboard&&navigator.clipboard.writeText){
+try{navigator.clipboard.writeText(u).then(done).catch(function(){shFallback(u,done)});return}catch(err){}
+}
+shFallback(u,done)
+}
+function shNative(){
+if(!shSave())return;
+shRender();
+var u=document.getElementById('shurl').value;
+var p=null;
+if(SH.id>=0)for(var i=0;i<PROD.length;i++)if(PROD[i].id===SH.id){p=PROD[i];break}
+var txt='我在连楚钟源头团购看到'+(p?('「'+p.name+'」'):'好产品')+'，推荐给你：';
+if(navigator.share){
+try{navigator.share({title:'连楚钟源头团购预售',text:txt,url:u}).catch(function(){});return}catch(err){}
+}
+shCopy()
+}
+function shInit(){
+var got=false;
+try{
+var s=new URLSearchParams(location.search).get('s');
+if(s){
+var raw=b64uDec(s),i=raw.indexOf('|');
+var p=i>-1?raw.slice(0,i):raw;
+var e=i>-1?raw.slice(i+1):'';
+if(shValid(p,e)){shStore(p,e);got=true}
+}
+}catch(e){}
+if(!got)shLoad();
+shBar();
+try{
+var pid=new URLSearchParams(location.search).get('p');
+if(pid){
+var id=parseInt(pid,10);
+if(!isNaN(id))setTimeout(function(){
+var el=document.getElementById('pp'+id);
+if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'center'});
+if(el)el.style.outline='3px solid #e76f51';
+},600)
+}
+}catch(e){}
+}
+
+
 function orderNo(){
 var d=new Date(),p=function(x){return (x<10?'0':'')+x};
 var stamp=''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
@@ -314,6 +521,7 @@ h+='<span id="q'+p.id+'">0</span>';
 h+='<button onclick="sel('+p.id+',1)">+</button>';
 h+='</div>';
 h+='<button class="add-btn" onclick="add('+p.id+')">加入预订</button>';
+h+='<button class="sbtn" onclick="shOpen('+p.id+')">🔗 分享这个产品</button>';
 h+='</div>';
 }
 if(seen===0)h='<div class="empty" style="grid-column:1/-1">未找到匹配的产品，换个关键词试试</div>';
@@ -350,7 +558,7 @@ spec+='</ul></div>';
 }
 var body='<div class="dm-head"><div class="dm-name">'+escTxt(pn)+'</div><div class="dm-price">'+dpr+'</div></div>';
 body+=hero+spec+sec;
-body+='<div class="dm-foot"><button class="dm-add" onclick="add('+p.id+');closeDm()">🛒 加入预订</button><button class="dm-close" onclick="closeDm()">关闭</button></div>';
+body+='<div class="dm-foot"><button class="dm-add" onclick="add('+p.id+');closeDm()">🛒 加入预订</button><button class="dm-sh" onclick="shOpen('+p.id+')">🔗 分享</button><button class="dm-close" onclick="closeDm()">关闭</button></div>';
 document.getElementById('dm-body').innerHTML=body;
 document.getElementById('dm-modal').classList.add('show');
 }
@@ -434,7 +642,8 @@ function save(){try{localStorage.setItem('tg',JSON.stringify(C))}catch(e){}}
 
 function mailOrder(ono,n,p,em,ad,ms,ct){
 var sub='团购预售订单 '+ono+' '+n;
-var body='订单号: '+ono+'\n预订人信息:\n  姓名: '+n+'\n  电话: '+p+'\n  邮箱: '+em+'\n  地址: '+ad+'\n  留言: '+(ms||'无')+'\n\n预订产品:\n'+ct+'\n\n提交时间: '+new Date().toLocaleString();
+var sh=shTxt();
+var body='订单号: '+ono+'\n预订人信息:\n  姓名: '+n+'\n  电话: '+p+'\n  邮箱: '+em+'\n  地址: '+ad+'\n  留言: '+(ms||'无')+'\n'+(sh?'  分享人: '+sh+'\n':'')+'\n预订产品:\n'+ct+'\n\n提交时间: '+new Date().toLocaleString();
 window.location.href='mailto:cllcz@foxmail.com?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body)
 }
 
@@ -480,6 +689,7 @@ if(!window.emailjs||!EJ.s||!EJ.t||!EJ.p)return;
 var il='';
 for(var i=0;i<its.length;i++){il+=its[i].name+'  ¥'+its[i].price+' × '+its[i].q+' = ¥'+(its[i].price*its[i].q)+'\n'}
 var pj={to_name:n,to_email:em,reply_to:em,from_name:'连楚钟源头团购预售',from_email:EJ.from,ono:ono,phone:p,address:ad,msg:(ms||'无'),items:il+'合计: ¥'+tot,total:'¥'+tot,time:new Date().toLocaleString(),pay:'微信手机号转账 13202125281 或 18917266757'};
+if(shTxt())pj.sharer=shTxt();
 if(_ocData)pj.receipt=_ocData;
 emailjs.send(EJ.s,EJ.t,pj,EJ.p).catch(function(){})
 }catch(err){}
@@ -491,8 +701,10 @@ var W=620,pad=36,ih=30;
 var pf='"Microsoft YaHei","PingFang SC",sans-serif';
 var mctx=document.createElement('canvas').getContext('2d');
 mctx.font='15px '+pf;
-var addrLines=canvasLines(mctx,'地址: '+ad,W-pad*2);
-var msgLines=canvasLines(mctx,'留言: '+(ms||'无'),W-pad*2);
+var vw=W-pad-90;
+var addrLines=canvasLines(mctx,ad,vw);
+var msgLines=canvasLines(mctx,ms||'无',vw);
+var shLines=SH.p?canvasLines(mctx,shTxt(),vw):[];
 var s=2;
 var cv=document.createElement('canvas');
 cv.width=W*s;cv.height=2000*s;
@@ -527,6 +739,12 @@ for(k=0;k<addrLines.length;k++){ctx.fillText(addrLines[k],pad+90,y);y+=ih}
 ctx.fillStyle='#7f8c8d';ctx.fillText('留言: ',pad,y);
 ctx.fillStyle='#2d3436';
 for(k=0;k<msgLines.length;k++){ctx.fillText(msgLines[k],pad+90,y);y+=ih}
+if(shLines.length){
+ctx.fillStyle='#b7950b';ctx.fillText('分享人: ',pad,y);
+ctx.fillStyle='#e76f51';ctx.font='bold 15px '+pf;
+for(k=0;k<shLines.length;k++){ctx.fillText(shLines[k],pad+90,y);y+=ih}
+ctx.font='15px '+pf
+}
 row('提交时间: ',new Date().toLocaleString());
 ctx.strokeStyle='#ddd';
 ctx.beginPath();ctx.moveTo(pad,y-10);ctx.lineTo(W-pad,y-10);ctx.stroke();
@@ -588,11 +806,12 @@ return {ono:ono,its:its,ct:ct,tot:tot}
 
 function submitOrder(n,p,em,ad,ms,b,msgSel){
 var o=buildOrder();
-var bd='**订单号:** '+o.ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+(em||'未填写')+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n\n**预订产品:**\n'+o.ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
+var sh=shTxt();
+var bd='**订单号:** '+o.ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+(em||'未填写')+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n'+(sh?'\n**分享人:** '+sh+'\n':'')+'\n**预订产品:**\n'+o.ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
 fetch('https://api.github.com/repos/'+K.o+'/'+K.r+'/issues',{
 method:'POST',
 headers:{'Authorization':'token '+K.t,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-body:JSON.stringify({title:'新团购预售 ['+o.ono+'] '+n+' - '+p,body:bd})
+body:JSON.stringify({title:'新团购预售 ['+o.ono+'] '+n+' - '+p+(SH.p?' [分享人: '+SH.p+']':''),body:bd})
 }).then(function(r){
 if(r.ok){
 msgSel('预订提交成功! 您的订单号: '+o.ono+'，我们将尽快联系您.','ok');
@@ -695,6 +914,7 @@ return fetch(url).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);re
 }
 
 initProducts();
+shInit();
 /* 左上角海报悬浮按钮：空闲时预加载压缩版海报(gif式jpg)，点击立即打开并自动保存到本地 */
 var _poster='img/lianchuzhong.jpg';
 var _posterReady=false;
