@@ -258,7 +258,6 @@ h1{font-size:1.5rem}
 <div id="shbar">
 <span class="sb-txt" id="sbtxt"></span>
 <button onclick="shOpen(-1)">分享给好友</button>
-<button onclick="shDrop()">取消分享人</button>
 </div>
 <h2>选择产品</h2>
 <input type="search" id="qbox" class="sbox" placeholder="🔍 搜索产品名称 / 特点" oninput="onSearch(this.value)">
@@ -353,12 +352,6 @@ var o=JSON.parse(localStorage.getItem(SH_KEY)||'null');
 if(o&&o.p&&shValid(o.p,o.e||'')){SH.p=o.p;SH.e=o.e||'';return true}
 }catch(e){}
 return false
-}
-function shDrop(){
-SH.p='';SH.e='';
-try{localStorage.removeItem(SH_KEY)}catch(e){}
-shBar();
-try{var u=new URL(location.href);u.searchParams.delete('s');history.replaceState(null,'',u.pathname+u.search)}catch(e){}
 }
 /* 分享人联系方式文本，用于订单备注与存根 */
 function shTxt(){
