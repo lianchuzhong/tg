@@ -1,56 +1,128 @@
-# 团购预售网站
+# 连楚钟源头团购预售网站
 
-这是一个基于 GitHub Pages 的静态团购预售网站。
+线上地址：<https://lianchuzhong.github.io/tg/>
 
-## 功能特性
+一个基于 GitHub Pages 的静态团购预售网站，无需服务器、无需数据库。
 
-- **无需登录**：用户直接访问即可使用
-- **加入预订车**：点击产品即可加入本地预订车（使用 localStorage）
-- **联系方式提交**：收集姓名、电话、邮箱和留言
-- **GitHub Issue 自动创建**：提交表单后自动在 GitHub 创建 Issue，并发送通知
-- **响应式设计**：电脑和手机均可良好显示
+---
 
-## 部署步骤
+## 一、网站功能
 
-### 1. 创建 GitHub 仓库
-- 登录 GitHub，创建新仓库：`tg-new`
-- 进入仓库设置 → Pages
-- Source 选择 `main` 分支，/ (root) 目录
-- 保存后会自动生成站点 URL
+| 功能 | 说明 |
+|---|---|
+| 产品展示 | 分类筛选、关键词搜索、档次（多规格）选择 |
+| 预订车 | 加入预订、增减数量、删除、本地保存（localStorage） |
+| 下单 | 主表单 + 右下角悬浮购物车，两处都能下单 |
+| 订单存根 | 下单后自动生成 PNG 存根图并下载到本机 |
+| 分享裂变 | 生成带分享人身份的专属链接，好友下单自动备注推荐人 |
+| 付款方式 | 微信手机号转账，一键复制号码 |
+| 访客记录 | 每次访问上报设备/来源/页面，本机脚本存成桌面 CSV |
+| 订单通知 | 订单写入 GitHub 私有仓库 → 邮件 + 本机 Windows 弹窗 |
 
-### 2. 上传文件
-- 将 `index.html` 上传到仓库根目录
-- 可选：添加 `style.css` 和 `script.js` 等文件
+## 二、仓库结构
 
-### 3. 配置 GitHub Token
-- 在 `index.html` 中找到并修改 token 变量
-- 或直接在代码中配置（不推荐用于公开仓库）
-
-### 4. 访问站点
-- 访问 `https://lianchuzhong.github.io/tg-new/`
-- 提交表单后数据将自动创建为 GitHub Issue
-
-## 关键配置
-
-### GitHub API 令牌
-编辑 `index.html` 中的以下变量：
-```javascript
-const token = 'your_github_token_here';
+```
+lianchuzhong/
+├── tg/                  ← 本仓库：网站本体（公开，GitHub Pages）
+│   ├── index.html           整个网站（HTML + CSS + JS 都在这一个文件里）
+│   ├── products.json        产品与分类数据
+│   ├── 健康报告.md           每日体检报告（自动生成）
+│   ├── tools/health-check.js 体检 / 自动修复脚本
+│   └── .github/workflows/daily-health-check.yml 每日定时任务
+│
+├── tg-orders/           ← 私有：订单仓库，每笔订单 = 一个 issue
+└── tg-visits/           ← 私有：访客记录仓库（只作队列，用完即清）
 ```
 
-### 仓库信息
-修改提交函数中的：
-- `const owner = 'lianchuzhong';` - GitHub 用户名
-- `const repo = 'tg-new';` - 仓库名称
+## 三、订单是怎么通知到电脑上的
 
-## 本地开发
+```
+顾客下单
+   │
+   ├─► tg-orders 开一个 issue（带 order 标签）
+   │      ├─► GitHub 自带通知邮件发到你的邮箱
+   │      └─► 你电脑上的「团购网站监控」每 5 分钟检查一次
+   │             ├─► 弹出 Windows 通知
+   │             └─► 追加到桌面「订单记录.csv」
+   │
+   └─► tg-visits 开一个 issue（带 visit 标签，只作访客队列）
+          └─► 监控脚本取出后写入桌面「访客记录.csv」，并自动关闭该 issue
+```
+
+桌面上有一个文件夹 `团购网站监控`：
+
+| 文件 | 内容 |
+|---|---|
+| `订单记录.csv` | 每笔订单一行（时间/订单号/姓名/电话/邮箱/地址/留言/分享人/产品/合计/链接） |
+| `访客记录.csv` | 每次访问一行（时间/会话/设备/屏幕/来源/分享人/页面/语言） |
+| `监控日志.txt` | 运行日志 |
+| `状态.json` | 上次处理到哪一条，避免重复提醒 |
+| `监控.ps1` | 监控脚本本体 |
+
+`订单记录.csv` / `访客记录.csv` 用 UTF-8 BOM 存盘，Excel 双击直接打开不乱码。
+
+## 四、每日自动体检
+
+`.github/workflows/daily-health-check.yml` 每天北京时间 09:30 自动运行
+（也可以在 Actions 页面手动点 "Run workflow"）。
+
+**会自动修复的（只动 `products.json` 数据，不碰代码）：**
+
+- 产品引用了不存在的分类 → 自动补进 `categories`
+- 产品 `id` 重复或非法 → 自动重新编号
+- 有档次但缺 `price` → 用最低档价格补上
+- 某档价格缺失 / 小于等于 0 → 用其它有效档的价格补上
+
+**只报警告、不擅自修改的：**
+
+- 产品缺价格且没有档次可推导
+- 产品没有名称
+- 图片文件丢失
+- 线上站点打不开（HTTP 非 200）
+- `index.html` 缺关键功能 / 关键函数重复定义
+- 数量显示被写死成 0（曾经导致顾客多订 3 倍的 bug，会被专门盯住）
+
+发现需要人工处理的问题时，会自动开一个带 `健康告警` 标签的 issue，
+**同时给你发 GitHub 通知邮件**；下次体检全部通过会自动关闭该告警。
+
+本地也能跑：
 
 ```bash
-# 使用任意 HTTP 服务器运行
-npx serve
-
-# 或使用 Python
-python -m http.server 8000
+node tools/health-check.js --check    # 只检查，有问题退出码 1
+node tools/health-check.js --repair   # 自动修复，改动过退出码 2
 ```
 
-访问 http://localhost:8000 查看效果。
+## 五、本机监控手动操作
+
+```powershell
+# 立刻检查一次
+& "E:\桌面1\团购网站监控\监控.ps1"
+
+# 开机自启 / 每 5 分钟：已注册计划任务「团购网站监控」
+Get-ScheduledTask -TaskName '团购网站监控'
+Start-ScheduledTask -TaskName '团购网站监控'
+```
+
+计划任务在**你登录状态下**运行才能弹 Windows 通知；
+如果以 SYSTEM 身份运行则只有日志，没有弹窗。
+
+## 六、已知风险（重要）
+
+`index.html` 里保存着一个 GitHub 访问令牌（用于在前端直接创建订单 issue）。
+虽然做了 base64 乱序伪装，但**任何人都能还原**。
+
+⚠️ 建议改成下面任一方案：
+
+1. **换成受限的细粒度令牌（最容易）**
+   新建令牌时只勾选 `tg-orders` 仓库 + `Issues: Read and write`，
+   然后删掉旧令牌。
+2. **用 Cloudflare Worker 中转**
+   令牌放在 Worker 里，浏览器完全接触不到，最安全。
+
+在换掉之前，**不要把这个令牌用在其他仓库**，也**不要把它发给任何人**。
+
+## 七、联系方式
+
+- 微信：lcz13202125281
+- 手机：18917266757
+- 邮箱：cllcz@foxmail.com / lianchuzhong@hotmail.com
