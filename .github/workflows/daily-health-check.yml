@@ -1,0 +1,116 @@
+name: 每日体检与自动修复
+
+on:
+  schedule:
+    # 每天 01:30 UTC ＝ 北京时间 09:30 自动检查
+    - cron: '30 1 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'repair = 检查并自动修复数据；check = 只检查不改动'
+        required: false
+        default: repair
+        type: choice
+        options: [repair, check]
+
+permissions:
+  contents: write   # 允许提交修好的 products.json
+  issues: write     # 允许开/更新告警 issue
+
+concurrency:
+  group: daily-health-check
+  cancel-in-progress: false
+
+jobs:
+  health:
+    name: 体检 + 修数据 + 告警
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 准备 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 决定运行模式
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=--${{ inputs.mode }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=--repair" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 运行体检（自动修复安全的数据问题）
+        id: check
+        run: |
+          set +e
+          node tools/health-check.js ${{ steps.mode.outputs.value }} | tee repair-output.txt
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          # 0=全通过 1=有人工要处理的问题 2=已自动修复
+          if [ "$code" -eq 2 ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+
+      - name: 提交自动修复结果
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add products.json 健康报告.md
+          git diff --staged --quiet || git commit -m "chore: 每日体检自动修复产品数据"
+          git push
+
+      - name: 提交体检报告
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f 健康报告.md
+          if ! git diff --staged --quiet; then
+            git commit -m "docs: 更新每日体检报告"
+            git push || echo "报告提交失败（可能与上一步同一提交），忽略"
+          else
+            echo "报告无变化"
+          fi
+
+      - name: 有问题时开/更新告警 issue
+        if: steps.check.outputs.exit_code == '1'
+        run: |
+          body=$(cat 健康报告.md)
+          title="⚠️ 每日体检发现 $(grep -c '^- ' <<< "$body" || true) 处问题，请人工处理"
+          # 找已有的告警 issue
+          existing=$(gh issue list --label 健康告警 --state open --limit 1 --json number -q '.[0].number' 2>/dev/null || true)
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --title "$title" --body "$body" >/dev/null 2>&1 \
+              && echo "已更新告警 issue #$existing" \
+              || echo "更新告警 issue 失败"
+            gh issue comment "$existing" --body "🔄 $(date -u '+%Y-%m-%d %H:%M UTC') 自动体检再次发现问题，报告已刷新。" >/dev/null 2>&1 || true
+          else
+            gh issue create --title "$title" --body "$body" --label 健康告警 >/dev/null 2>&1 \
+              && echo "已创建告警 issue" \
+              || echo "创建告警 issue 失败"
+          fi
+
+      - name: 全部正常时关闭旧告警
+        if: steps.check.outputs.exit_code == '0'
+        run: |
+          for n in $(gh issue list --label 健康告警 --state open --limit 20 --json number -q '.[].number' 2>/dev/null); do
+            gh issue close "$n" --comment "✅ $(date -u '+%Y-%m-%d %H:%M UTC') 自动体检全部通过，已自动关闭。" >/dev/null 2>&1 || true
+          done
+          echo "无问题，无需告警"
+
+      - name: 结果写入运行摘要
+        run: |
+          {
+            echo "## 📋 每日体检结果"
+            echo
+            cat 健康报告.md
+          } >> "$GITHUB_STEP_SUMMARY"
