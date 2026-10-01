@@ -84,6 +84,26 @@ function checkHTML() {
     if (html.indexOf(needle) === -1) problem('严重', `index.html 缺少${label}（找不到 "${needle}"）`);
   }
 
+  /* 分享二维码相关结构 */
+  const qrMust = [
+    ['var QR=(function(){', '二维码编码器'],
+    ['id="shQrBox"', '分享弹窗二维码区'],
+    ['id="shQrToggle"', '二维码切换按钮'],
+    ['id="shQrImg"', '二维码图片'],
+    ['function shQrToggle(', '二维码生成函数'],
+    ['function shQrSave(', '二维码保存函数'],
+    ['function qrPoster(', '二维码海报绘制函数'],
+    ['function qrLand(', '扫码落地函数'],
+    ['id="qrbanner"', '扫码提示条'],
+    ['function qrAddQuiet(', '扫码加入预订车函数'],
+  ];
+  for (const [needle, label] of qrMust) {
+    if (html.indexOf(needle) === -1) problem('严重', `index.html 缺少${label}（找不到 "${needle}"）`);
+  }
+  if (/qrcode\.com|chart\.googleapis|api\.qrserver/.test(html)) {
+    problem('警告', 'index.html 里出现外部二维码接口，分享二维码会依赖第三方服务');
+  }
+
   // 关键函数定义不能重复（重复通常是合并冲突留下的）
   for (const fn of ['function add(', 'function submitOrder(', 'function renderProducts(', 'function vLog(']) {
     const n = html.split(fn).length - 1;
@@ -99,7 +119,46 @@ function checkHTML() {
   }
 }
 
-/* ============ 3. 检查 + 修复 products.json ============ */
+/* ============ 3. 实测二维码编码器 ============ */
+function checkQR() {
+  const f = path.join(ROOT, 'index.html');
+  if (!fs.existsSync(f)) return;
+  const html = fs.readFileSync(f, 'utf8');
+  const a = html.indexOf('var QR=(function(){');
+  const b = html.indexOf('/* 画成海报');
+  if (a < 0 || b < 0) { problem('严重', 'index.html 里找不到二维码编码器源码'); return; }
+  let QRM;
+  try {
+    QRM = new Function(html.slice(a, b) + '; return QR;')();
+  } catch (e) {
+    problem('严重', `二维码编码器无法编译：${e.message}`);
+    return;
+  }
+  const cases = [
+    ['https://lianchuzhong.github.io/tg/?p=1', 3],
+    ['https://lianchuzhong.github.io/tg/?s=MzEzMDAxMzgwMDA%3D&p=19', null],
+    ['微信扫码直接下单 高山土特产 礼盒装', null],
+  ];
+  for (const [text, wantVersion] of cases) {
+    let m;
+    try { m = QRM.matrix(text); } catch (e) { problem('严重', `二维码生成报错（${text.slice(0, 24)}…）：${e.message}`); continue; }
+    if (!m || !m.length) { problem('严重', `二维码生成失败（${text.slice(0, 24)}…）`); continue; }
+    const size = m.length, v = (size - 17) / 4;
+    if (Number.isInteger(v) && v >= 1 && v <= 20) {
+      note(`二维码正常：${size}×${size} 模块 / 版本 ${v} / ${Buffer.byteLength(text)} 字节`);
+      if (wantVersion && v !== wantVersion) problem('警告', `二维码版本与预期不符：${v}（预期 ${wantVersion}）`);
+    } else {
+      problem('严重', `二维码尺寸异常：${size}×${size}`);
+    }
+  }
+  try {
+    if (QRM.matrix('x'.repeat(5000)) !== null) problem('警告', '二维码对超长内容没有返回 null，可能生成无效码');
+  } catch (e) {
+    problem('严重', `二维码处理超长内容报错：${e.message}`);
+  }
+}
+
+/* ============ 4. 检查 + 修复 products.json ============ */
 function checkData() {
   const f = path.join(ROOT, 'products.json');
   if (!fs.existsSync(f)) { problem('严重', '缺少 products.json'); return false; }
@@ -255,6 +314,7 @@ function report() {
 (async () => {
   await checkSite();
   checkHTML();
+  checkQR();
   checkData();
 
   const md = report();
