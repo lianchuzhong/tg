@@ -190,8 +190,26 @@ h1{font-size:1.5rem}
 #shbar button{background:#e76f51;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:.82rem;cursor:pointer}
 #shbar button:hover{background:#d65a40}
 @media(max-width:768px){
-.sh-acts button{min-width:100%}
-#shbar button{flex:1}
+ .sh-acts button{min-width:100%}
+ #shbar button{flex:1}
+}
+.sh-qr{display:block;margin-top:14px;padding-top:14px;border-top:1px dashed #eee}
+.sh-qr-tip{font-size:.82rem;color:#2d3436;margin-top:9px;line-height:1.7}
+.sh-qr-tip b{color:#e76f51}
+.sh-qr-btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.sh-qr-btns button{flex:1 1 0;min-width:118px;padding:12px;border:none;border-radius:8px;font-size:.98rem;font-weight:bold;cursor:pointer;color:#fff;background:#2980b9}
+.sh-qr-btns button:hover{filter:brightness(.92)}
+.sh-qr-btns button.green{background:#27ae60}
+.qr-img{width:100%;max-width:330px;border:1px solid #f0f0f0;border-radius:10px;background:#fff}
+#qrbanner{display:none;background:#eaf6ff;border:1px solid #b6dcff;border-radius:10px;padding:11px 14px;margin-bottom:16px;font-size:.9rem;color:#1b5e9c;align-items:center;gap:10px;flex-wrap:wrap}
+#qrbanner.show{display:flex}
+#qrbanner .qb-txt{flex:1;min-width:170px;line-height:1.7}
+#qrbanner .qb-txt b{color:#e76f51}
+#qrbanner button{background:#2980b9;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:.82rem;cursor:pointer;white-space:nowrap}
+#qrbanner button.qb-x{background:#b2bec3}
+@media(max-width:768px){
+  .sh-qr-btns button{min-width:100%}
+  #qrbanner button{flex:1}
 }
 </style>
 </head>
@@ -237,10 +255,20 @@ h1{font-size:1.5rem}
 <label>我的专属分享链接</label>
 <input type="text" id="shurl" readonly onclick="this.select()">
 </div>
+<div class="sh-qr" id="shQrBox" style="display:none">
+  <div class="sh-qr-btns">
+    <button id="shQrToggle" onclick="shQrToggle()">扫二维码</button>
+    <button class="green" id="shCopyBtn" onclick="shCopy()">复制链接</button>
+  </div>
+  <div id="shQrImgBox" style="display:none;margin-top:14px">
+    <img class="qr-img" id="shQrImg" alt="产品分享二维码">
+    <div class="sh-qr-tip">长按图片可保存到手机，顾客用微信「扫一扫」就能<b>直接进入下单页面</b>。</div>
+    <div class="sh-qr-btns"><button onclick="shQrSave()">保存二维码图片</button></div>
+  </div>
+</div>
 <div class="sh-acts">
-<button class="green" id="shCopyBtn" onclick="shCopy()">保存并复制链接</button>
-<button id="shNativeBtn" onclick="shNative()">分享给好友</button>
-<button class="gray" onclick="shClose()">关闭</button>
+  <button id="shNativeBtn" onclick="shNative()">分享给好友</button>
+  <button class="gray" onclick="shClose()">关闭</button>
 </div>
 <div id="shMsg" class="sh-msg"></div>
 </div>
@@ -258,6 +286,11 @@ h1{font-size:1.5rem}
 <div id="shbar">
 <span class="sb-txt" id="sbtxt"></span>
 <button onclick="shOpen(-1)">分享给好友</button>
+</div>
+<div id="qrbanner">
+<span class="qb-txt" id="qbtxt"></span>
+<button onclick="qbDetail()">看产品详情</button>
+<button class="qb-x" onclick="qbHide()">知道了</button>
 </div>
 <h2>选择产品</h2>
 <input type="search" id="qbox" class="sbox" placeholder="🔍 搜索产品名称 / 特点" oninput="onSearch(this.value)">
@@ -327,6 +360,7 @@ var ON=0;
    好友通过链接下单时，订单备注与订单存根自动附上分享人联系方式。 */
 var SH={p:'',e:'',id:-1};
 var SH_KEY='tg_share';
+var QRID=-1;        /* 扫码进来时预选的产品 id */
 
 function b64uEnc(s){
 var b=btoa(unescape(encodeURIComponent(s)));
@@ -379,8 +413,10 @@ function shRender(){
 var c=shCur();
 var box=document.getElementById('shLinkBox');
 if(box)box.style.display=c.ok?'block':'none';
+var qb=document.getElementById('shQrBox');
+if(qb)qb.style.display=c.ok?'block':'none';
 if(c.ok)document.getElementById('shurl').value=shLinkOf(c.p,c.e,SH.id);
-document.getElementById('shCopyBtn').textContent=c.ok?'复制链接':'保存并复制链接'
+else shQrReset()
 }
 function shMsg(t,c){
 var el=document.getElementById('shMsg');
@@ -392,10 +428,11 @@ SH.id=(id==null?-1:parseInt(id,10));
 var p=null;
 if(SH.id>=0)for(var i=0;i<PROD.length;i++)if(PROD[i].id===SH.id){p=PROD[i];break}
 document.getElementById('shTitle').textContent=p?('分享：'+p.name):'分享团购';
-document.getElementById('shSub').innerHTML=p?('好友点击链接即可查看并预订「<b>'+escTxt(p.name)+'</b>」，TA 的订单会自动备注你的联系方式。'):'填写手机号码和邮箱即可分享，好友通过你的链接下单后，订单会自动备注你的联系方式。';
+document.getElementById('shSub').innerHTML=(p?('好友扫码或点链接即可查看并预订「<b>'+escTxt(p.name)+'</b>」，TA 的订单会自动备注你的联系方式。'):'好友扫码或点链接即可下单，订单会自动备注你的联系方式。')+'下面可以二选一：<b>复制链接</b> 或 <b>扫二维码</b>。';
 var sv=shLoad();
 document.getElementById('shp').value=sv?sv.p:'';document.getElementById('she').value=sv?sv.e:'';
 shMsg('');
+shQrReset();
 shRender();
 document.getElementById('sh-modal').classList.add('show')
 }
@@ -451,17 +488,370 @@ if(shValid(p,e)){shStore(p,e);got=true}
 }catch(e){}
 if(!got)shLoad();
 shBar();
-try{
-var pid=new URLSearchParams(location.search).get('p');
-if(pid){
-var id=parseInt(pid,10);
-if(!isNaN(id))setTimeout(function(){
-var el=document.getElementById('pp'+id);
-if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'center'});
-if(el)el.style.outline='3px solid #e76f51';
-},600)
 }
-}catch(e){}
+function prodById(id){
+for(var i=0;i<PROD.length;i++)if(PROD[i].id===id)return PROD[i];
+return null
+}
+function priceText(p){
+if(p.tiers&&p.tiers.length){
+var ps=p.tiers.map(function(x){return x.price});
+return '¥'+Math.min.apply(null,ps)+'~'+Math.max.apply(null,ps)+'/'+(p.unit||'份')
+}
+return '¥'+p.price+'/'+(p.unit||'份')
+}
+
+/* ==================== 单款产品二维码 ====================
+   在「分享产品」弹窗里，把专属分享链接在浏览器本地画成二维码海报。
+   顾客微信扫一扫 → 打开本页并自动选中该产品、直接进入下单表单。
+   纯本地计算：不联网、不调用任何外部二维码接口、不上传任何数据。 */
+var QR=(function(){
+var E=new Array(512),L=new Array(256),i;
+(function(){var x=1;for(i=0;i<255;i++){E[i]=x;L[x]=i;x=x<<1;if(x&256)x=x^0x11d}for(i=255;i<512;i++)E[i]=E[i-255]})();
+function mul(a,b){return(a&&b)?E[L[a]+L[b]]:0}
+var TOT=[0,26,44,70,100,134,172,196,242,292,346,404,466,532,581,655,733,815,901,991,1085];
+var ECN=[0,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26];
+var NBK=[0,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10,11,13,14,16];
+var ALN=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90]];
+var MAXV=20;                      /* 版本 1~20，字节模式最多约 667 字节 */
+function dcap(v){return TOT[v]-ECN[v]*NBK[v]}
+function toByte(s){
+var t=unescape(encodeURIComponent(''+s)),a=[],k;
+for(k=0;k<t.length;k++)a.push(t.charCodeAt(k)&255);
+return a
+}
+function pmul(a,b){
+var r=[],i,j;
+for(i=0;i<a.length;i++)for(j=0;j<b.length;j++)r[i+j]=(r[i+j]||0)^mul(a[i],b[j]);
+return r
+}
+/* 生成多项式取余，得到该块的纠错码字 */
+function rs(data,n){
+var g=[1],i,j;
+for(i=0;i<n;i++)g=pmul(g,[1,E[i]]);
+var r=data.slice(0);
+for(i=0;i<n;i++)r.push(0);
+for(i=0;i<data.length;i++){
+var c=r[i];
+if(!c)continue;
+for(j=0;j<g.length;j++)r[i+j]^=mul(g[j],c)
+}
+return r.slice(data.length)
+}
+function weave(v,datas,ecs){
+var out=[],mx=0,i,k;
+for(i=0;i<datas.length;i++)if(datas[i].length>mx)mx=datas[i].length;
+for(k=0;k<mx;k++)for(i=0;i<datas.length;i++)if(k<datas[i].length)out.push(datas[i][k]);
+for(k=0;k<ECN[v];k++)for(i=0;i<ecs.length;i++)out.push(ecs[i][k]);
+return out
+}
+function cw(v,by){
+var bits=[],cap=dcap(v)*8,i,k;
+function put(val,n){for(k=n-1;k>=0;k--)bits.push((val>>>k)&1)}
+put(4,4);
+put(by.length,v<10?8:16);
+for(i=0;i<by.length;i++)put(by[i],8);
+for(i=0;i<4&&bits.length<cap;i++)bits.push(0);
+while(bits.length%8)bits.push(0);
+for(i=0;bits.length<cap;i++)put(i%2?0x11:0xEC,8);
+var out=[];
+for(i=0;i<bits.length;i+=8){
+var x=0;
+for(k=0;k<8;k++)x=(x<<1)|bits[i+k];
+out.push(x)
+}
+return out
+}
+function verBits(v){
+var r=v;
+for(var i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);
+return(v<<12)|r
+}
+function fmtBits(mk){
+var d=mk&7,r=d;
+for(var i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);
+return((d<<10)|r)^0x5412      /* 纠错等级固定 M(=0) */
+}
+function build(v,data){
+var size=v*4+17,m=[],f=[],x,y,i,j;
+for(y=0;y<size;y++){m.push([]);f.push([]);for(x=0;x<size;x++){m[y].push(0);f[y].push(0)}}
+function set(x,y,d){if(x<0||y<0||x>=size||y>=size)return;m[y][x]=d?1:0;f[y][x]=1}
+function finder(x,y){
+for(var dy=-1;dy<=7;dy++)for(var dx=-1;dx<=7;dx++){
+var d=Math.max(Math.abs(dx-3),Math.abs(dy-3));
+set(x+dx,y+dy,d<=1||d===3)
+}
+}
+function fmt(mk){
+var b=fmtBits(mk);
+function bit(n){return(b>>>n)&1}
+for(i=0;i<=5;i++)set(8,i,bit(i));
+set(8,7,bit(6));
+set(8,8,bit(7));
+set(7,8,bit(8));
+for(i=9;i<15;i++)set(14-i,8,bit(i));
+for(i=0;i<8;i++)set(size-1-i,8,bit(i));
+for(i=8;i<15;i++)set(8,size-15+i,bit(i));
+set(8,size-8,true)
+}
+for(i=0;i<size;i++){set(6,i,i%2===0);set(i,6,i%2===0)}
+finder(0,0);finder(size-7,0);finder(0,size-7);
+var ap=ALN[v-1];
+for(i=0;i<ap.length;i++)for(j=0;j<ap.length;j++){
+if((i===0&&j===0)||(i===0&&j===ap.length-1)||(i===ap.length-1&&j===0))continue;
+for(var ay=-2;ay<=2;ay++)for(var ax=-2;ax<=2;ax++)
+set(ap[i]+ax,ap[j]+ay,Math.max(Math.abs(ax),Math.abs(ay))!==1)
+}
+fmt(0);
+if(v>=7){
+var vb=verBits(v);
+for(i=0;i<18;i++){
+var bt=(vb>>>i)&1,a=size-11+i%3,b=i/3|0;
+set(a,b,bt);set(b,a,bt)
+}
+}
+/* 数据按之字形填入非功能格 */
+var bit=0,total=data.length*8,right,vert,up;
+for(right=size-1;right>=1;right-=2){
+if(right===6)right=5;
+for(vert=0;vert<size;vert++){
+for(j=0;j<2;j++){
+x=right-j;
+up=(((right+1)&2)===0);
+y=up?(size-1-vert):vert;
+if(!f[y][x]&&bit<total){m[y][x]=(data[bit>>3]>>(7-(bit&7)))&1;bit++}
+}
+}
+}
+/* 8 种掩码选罚分最低的 */
+function hit(mk,x,y){
+switch(mk){
+case 0:return(x+y)%2===0;
+case 1:return y%2===0;
+case 2:return x%3===0;
+case 3:return(x+y)%3===0;
+case 4:return((x/3|0)+(y/2|0))%2===0;
+case 5:return(x*y)%2+(x*y)%3===0;
+case 6:return((x*y)%2+(x*y)%3)%2===0;
+default:return(((x+y)%2)+(x*y)%3)%2===0
+}
+}
+function apply(mk){
+for(y=0;y<size;y++)for(x=0;x<size;x++)if(!f[y][x]&&hit(mk,x,y))m[y][x]^=1
+}
+function pen(){
+var s=0,run,x,y,c;
+for(y=0;y<size;y++){
+run=1;
+for(x=1;x<size;x++){
+if(m[y][x]===m[y][x-1])run++;
+else{if(run>=5)s+=3+run-5;run=1}
+}
+if(run>=5)s+=3+run-5
+}
+for(x=0;x<size;x++){
+run=1;
+for(y=1;y<size;y++){
+if(m[y][x]===m[y-1][x])run++;
+else{if(run>=5)s+=3+run-5;run=1}
+}
+if(run>=5)s+=3+run-5
+}
+for(y=0;y<size-1;y++)for(x=0;x<size-1;x++){
+c=m[y][x];
+if(c===m[y][x+1]&&c===m[y+1][x]&&c===m[y+1][x+1])s+=3
+}
+var p1=[1,0,1,1,1,0,1,0,0,0,0],p2=[0,0,0,0,1,0,1,1,1,0,1],k;
+for(y=0;y<size;y++)for(x=0;x+11<=size;x++){
+var a=1,b=1;
+for(k=0;k<11;k++){
+if(m[y][x+k]!==p1[k])a=0;
+if(m[y][x+k]!==p2[k])b=0
+}
+if(a)s+=40;
+if(b)s+=40
+}
+for(x=0;x<size;x++)for(y=0;y+11<=size;y++){
+var a2=1,b2=1;
+for(k=0;k<11;k++){
+if(m[y+k][x]!==p1[k])a2=0;
+if(m[y+k][x]!==p2[k])b2=0
+}
+if(a2)s+=40;
+if(b2)s+=40
+}
+var dark=0;
+for(y=0;y<size;y++)for(x=0;x<size;x++)dark+=m[y][x];
+s+=Math.floor(Math.abs(dark*100/(size*size)-50)/5)*10;
+return s
+}
+var best=0,bs=-1;
+for(var mk=0;mk<8;mk++){
+apply(mk);
+fmt(mk);
+var sc=pen();
+if(bs<0||sc<bs){bs=sc;best=mk}
+apply(mk)
+}
+apply(best);
+fmt(best);
+return m
+}
+return{matrix:function(text){
+var by=toByte(text),v=0,i;
+for(i=1;i<=MAXV;i++){
+var cc=i<10?8:16;
+if(Math.ceil((4+cc+by.length*8)/8)<=dcap(i)){v=i;break}
+}
+if(!v)return null;
+var data=cw(v,by),nb=NBK[v],ec=ECN[v],sh=Math.floor(TOT[v]/nb)-ec,d1=dcap(v)-sh*nb,datas=[],ecs=[],off=0;
+  for(i=0;i<nb;i++){
+  var len=sh+(i<nb-d1?0:1),blk=data.slice(off,off+len);   /* 标准：短块在前，长块在后 */
+off+=len;
+datas.push(blk);
+ecs.push(rs(blk,ec))
+}
+return build(v,weave(v,datas,ecs))
+}}
+})();
+
+/* 画成海报：产品名 + 价格 + 二维码 + 联系方式（微信里可长按保存） */
+function qrPoster(p,m,u){
+var W=640,pad=32,qz=4,pf='"Microsoft YaHei","PingFang SC",sans-serif',s=2;
+var cell=Math.max(2,Math.floor(300/(m.length+qz*2))),qw=cell*(m.length+qz*2);
+var mc=document.createElement('canvas').getContext('2d');
+mc.font='bold 30px '+pf;
+var lines=canvasLines(mc,p.name||'',W-pad*2);
+if(lines.length>2)lines=lines.slice(0,2);
+var H=pad+28+34+lines.length*38+46+qw+44+30+28+26+22+pad;
+var cv=document.createElement('canvas');
+cv.width=W*s;cv.height=H*s;
+var ctx=cv.getContext('2d');
+ctx.scale(s,s);
+ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+ctx.fillStyle='#e76f51';ctx.fillRect(0,0,W,8);
+ctx.textAlign='center';
+var y=pad+26;
+ctx.fillStyle='#7f8c8d';ctx.font='16px '+pf;
+ctx.fillText('连楚钟源头团购预售',W/2,y);
+y+=34;
+ctx.fillStyle='#2d3436';ctx.font='bold 30px '+pf;
+for(var i=0;i<lines.length;i++){ctx.fillText(lines[i],W/2,y);y+=38}
+ctx.fillStyle='#e76f51';ctx.font='bold 26px '+pf;
+ctx.fillText(priceText(p),W/2,y);
+y+=46;
+var ox=Math.round((W-qw)/2);
+ctx.fillStyle='#000';
+for(var r=0;r<m.length;r++)for(var c=0;c<m.length;c++)if(m[r][c])ctx.fillRect(ox+(c+qz)*cell,y+(r+qz)*cell,cell,cell);
+y+=qw+40;
+ctx.fillStyle='#2d3436';ctx.font='bold 19px '+pf;
+ctx.fillText('微信扫一扫 · 直接进入下单页面',W/2,y);
+y+=32;
+ctx.fillStyle='#b2bec3';ctx.font='13px '+pf;
+var sn=(''+u).replace(/^https?:\/\//,'');
+if(sn.length>48)sn=sn.slice(0,48)+'…';
+ctx.fillText(sn,W/2,y);
+y+=28;
+ctx.fillStyle='#7f8c8d';ctx.font='15px '+pf;
+ctx.fillText('微信 lcz13202125281 · 18917266757',W/2,y);
+y+=24;
+ctx.fillStyle='#b7950b';ctx.font='13px '+pf;
+ctx.fillText('预售商品 · 下单后请按提示付款',W/2,y);
+return cv.toDataURL('image/png')
+}
+var SHQR='';      /* 海报图片 dataURL */
+function shQrReset(){
+SHQR='';
+var ib=document.getElementById('shQrImgBox');
+if(ib)ib.style.display='none';
+var tb=document.getElementById('shQrToggle');
+if(tb)tb.textContent='扫二维码'
+}
+/* 分享方式二选一：复制链接 / 扫二维码 */
+function shQrToggle(){
+var ib=document.getElementById('shQrImgBox');
+if(!ib)return;
+var tb=document.getElementById('shQrToggle');
+if(ib.style.display==='block'){ib.style.display='none';tb.textContent='扫二维码';return}
+if(!SH.p||!shValid(SH.p,SH.e)){shMsg('请先填写正确的手机号码和邮箱','err');return}
+try{
+var p=SH.id>=0?prodById(SH.id):null;
+var m=QR.matrix(shLinkOf(SH.p,SH.e,SH.id));
+if(!m)throw new Error('内容过长');
+SHQR=qrPoster(p||{name:'连楚钟源头团购预售',price:0,unit:''},m,shLinkOf(SH.p,SH.e,SH.id));
+document.getElementById('shQrImg').src=SHQR;
+ib.style.display='block';
+tb.textContent='收起二维码'
+}catch(err){
+shMsg('二维码生成失败，请改用复制链接','err')
+}
+}
+function shQrSave(){
+if(!SHQR){shMsg('请先点「扫二维码」','err');return
+}
+ocDownload(SHQR,'产品二维码'+(SH.id>=0?('_'+prodName(SH.id)):'')+'.png');
+shMsg('二维码图片已保存，可直接发到微信群','ok')
+}
+function prodName(id){
+var p=prodById(id);
+return p?String(p.name).replace(/[\\/:*?"<>|]/g,''):'产品'
+}
+/* ==================== 扫码直达下单 ====================
+   顾客扫某款产品的二维码进来（链接带 ?p=产品id）时：
+   自动把该产品选中并加入预订车，然后直接打开下单表单。 */
+function qrLand(){
+var pid='';
+try{pid=new URLSearchParams(location.search).get('p')||''}catch(e){}
+if(!pid)return;
+var id=parseInt(pid,10);
+if(isNaN(id))return;
+var p=prodById(id);
+if(!p)return;
+CAT=(p.category||'all');
+KW='';
+var qb=document.getElementById('qbox');
+if(qb)qb.value='';
+buildCats();
+renderProducts();
+if(p.tiers&&p.tiers.length)TIER[id]=0;
+var qe=document.getElementById('q'+id);
+if(qe)qe.textContent=1;
+qrAddQuiet(id);
+QRID=id;
+var b=document.getElementById('qrbanner');
+if(b){
+document.getElementById('qbtxt').innerHTML='已按二维码为您预选「<b>'+escTxt(p.name)+'</b>」×1，填好收货信息即可提交订单。';
+b.className='show'
+}
+setTimeout(function(){
+var fp=document.getElementById('fpanel');
+if(fp){
+fp.classList.add('show');
+if(fp.scrollIntoView)fp.scrollIntoView({behavior:'smooth',block:'end'})
+}
+},500)
+}
+function qrAddQuiet(id){
+var p=prodById(id);
+if(!p)return;
+var nm=p.name,pr=p.price,cid=id;
+if(p.tiers&&p.tiers.length){
+var ti=TIER[id]==null?0:TIER[id];
+pr=p.tiers[ti].price;
+nm=p.name+'·'+p.tiers[ti].name;
+cid=id+'_'+ti
+}
+for(var i=0;i<C.length;i++)if(C[i].id===cid){C[i].q+=1;save();draw();return}
+C.push({id:cid,name:nm,price:pr,q:1});
+save();
+draw()
+}
+function qbDetail(){
+if(QRID>=0)openDetail(QRID)
+}
+function qbHide(){
+var b=document.getElementById('qrbanner');
+if(b)b.className=''
 }
 
 
@@ -529,6 +919,13 @@ function vLog(kind,extra){
     var sp=vShRef();
     if(sp)lines.push('- 分享人: '+sp);
     lines.push('- 页面: '+(location.pathname+location.search).slice(0,120));
+    try{
+      var qp=new URLSearchParams(location.search).get('p');
+      if(qp){
+        var pp=prodById(parseInt(qp,10));
+        lines.push('- 扫码产品: '+(pp?pp.name+' (id '+pp.id+')':qp))
+      }
+    }catch(e){}
     try{lines.push('- 语言: '+(navigator.language||'?'))}catch(e){}
     if(extra)lines.push('- 备注: '+extra);
     var body=lines.join('\n');
@@ -975,6 +1372,7 @@ for(var i=0;i<PROD.length;i++){S[PROD[i].id]=0}
 renderProducts();
 buildCats();
 ld();
+qrLand();
 }).catch(function(err){
 msg('产品加载失败: '+err.message,'err');
 renderProducts();
