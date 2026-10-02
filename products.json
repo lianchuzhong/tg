@@ -2806,7 +2806,8 @@
           ]
         }
       ],
-      "category": "beidou"
+      "category": "beidou",
+      "pin": true
     }
   ]
 }
