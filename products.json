@@ -3775,7 +3775,7 @@
     },
     {
       "id": 26,
-      "name": "聚酰亚胺冲锋衣棉服",
+      "name": "冲锋衣棉服",
       "icon": "img/outwear_jacketcotton_main.jpg",
       "price": 680,
       "unit": "件",
@@ -3967,8 +3967,7 @@
           ]
         }
       ],
-      "category": "outwear",
-      "pin": false
+      "category": "outwear"
     },
     {
       "id": 27,
