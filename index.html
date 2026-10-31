@@ -340,8 +340,8 @@ h1{font-size:1.5rem}
 <div class="pay-logo">WU<br>WeChat</div>
 <div>
 <div class="pay-name">Western Union - WeChat Wallet</div>
-<div class="pay-num">lianchuzhong</div>
-<div class="pay-note">微信: +86 13202125281（付款后请把 MTCN 汇款单号发给客服微信确认）</div>
+<div class="pay-num">LIAN CHU ZHONG</div>
+<div class="pay-note">微信绑定手机号: +86 13202125281（付款后请把 MTCN 汇款单号发给客服微信确认）</div>
 </div>
 <button class="pay-copy">复制</button>
 </div>
@@ -732,7 +732,7 @@ var mc=document.createElement('canvas').getContext('2d');
 mc.font='bold 30px '+pf;
 var lines=canvasLines(mc,p.name||'',W-pad*2);
 if(lines.length>2)lines=lines.slice(0,2);
-var H=pad+28+34+lines.length*38+46+qw+44+30+28+26+22+pad;
+var H=pad+28+34+lines.length*38+46+qw+44+30+28+26+24+24+22+pad;
 var cv=document.createElement('canvas');
 cv.width=W*s;cv.height=H*s;
 var ctx=cv.getContext('2d');
@@ -762,7 +762,7 @@ if(sn.length>48)sn=sn.slice(0,48)+'…';
 ctx.fillText(sn,W/2,y);
 y+=28;
 ctx.fillStyle='#7f8c8d';ctx.font='15px '+pf;
-ctx.fillText('微信 lcz13202125281 · 18917266757',W/2,y);
+ctx.fillText('微信 lcz13202125281 · 18917266757',W/2,y);y+=24;ctx.fillText('西联汇款 Western Union 微信钱包 收款人: LIAN CHU ZHONG',W/2,y);y+=24;ctx.fillText('微信绑定手机号: +86 13202125281',W/2,y);
 y+=24;
 ctx.fillStyle='#b7950b';ctx.font='13px '+pf;
 ctx.fillText('预售商品 · 下单后请按提示付款',W/2,y);
@@ -1181,7 +1181,7 @@ function emailOrder(ono,n,p,em,ad,ms,its,tot){
     if(!window.emailjs||!EJ.s||!EJ.t||!EJ.p)return;
     var il='';
     for(var i=0;i<its.length;i++){il+=its[i].name+'  ¥'+its[i].price+' × '+its[i].q+' = ¥'+(its[i].price*its[i].q)+'\n'}
-    var pj={to_name:n,to_email:em,reply_to:em,from_name:'连楚钟源头团购预售',from_email:EJ.from,ono:ono,phone:p,address:ad,msg:(ms||'无'),items:il+'合计: ¥'+tot,total:'¥'+tot,time:new Date().toLocaleString(),pay:'微信手机号转账 13202125281 或 18917266757'};
+    var pj={to_name:n,to_email:em,reply_to:em,from_name:'连楚钟源头团购预售',from_email:EJ.from,ono:ono,phone:p,address:ad,msg:(ms||'无'),items:il+'合计: ¥'+tot,total:'¥'+tot,time:new Date().toLocaleString(),pay:'微信手机号转账 13202125281 或 18917266757；西联汇款 Western Union 微信钱包 收款人 LIAN CHU ZHONG（微信绑定手机号 +86 13202125281）'};
     if(shTxt())pj.sharer=shTxt();
     if(_ocData)pj.receipt=_ocData;
     emailjs.send(EJ.s,EJ.t,pj,EJ.p).catch(function(){})
@@ -1272,7 +1272,7 @@ y+=22;
 ctx.fillText('邮箱: cllcz@foxmail.com  /  lianchuzhong@hotmail.com',W/2,y);
 y+=26;
 ctx.fillStyle='#b7950b';
-ctx.fillText('付款方式: 微信手机号转账 13202125281 / 18917266757',W/2,y);
+ctx.fillText('付款方式: 微信手机号转账 13202125281 / 18917266757',W/2,y);y+=22;ctx.fillText('西联汇款 Western Union 微信钱包 收款人: LIAN CHU ZHONG',W/2,y);y+=22;ctx.fillText('微信绑定手机号: +86 13202125281（付 MTCN 汇款单号给客服微信确认）',W/2,y);
 y+=24;
 ctx.fillStyle='#7f8c8d';
 ctx.fillText('提交即表示同意以上预售订单内容',W/2,y);
@@ -1300,7 +1300,7 @@ return {ono:ono,its:its,ct:ct,tot:tot}
 function submitOrder(n,p,em,ad,ms,b,msgSel){
   var o=buildOrder();
   var sh=shTxt();
-  var bd='**订单号:** '+o.ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+(em||'未填写')+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n'+(sh?'\n**分享人:** '+sh+'\n':'')+'\n**预订产品:**\n'+o.ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n\n**提交时间:** '+new Date().toLocaleString();
+  var bd='**订单号:** '+o.ono+'\n**预订人信息:**\n  - 姓名: '+n+'\n  - 电话: '+p+'\n  - 邮箱: '+(em||'未填写')+'\n  - 地址: '+ad+'\n  - 留言: '+(ms||'无')+'\n'+(sh?'\n**分享人:** '+sh+'\n':'')+'\n**预订产品:**\n'+o.ct+'\n\n**付款方式:** 微信手机号转账 13202125281 或 18917266757\n西联汇款 Western Union 微信钱包 收款人 LIAN CHU ZHONG（微信绑定手机号 +86 13202125281）\n\n**提交时间:** '+new Date().toLocaleString();
   function busy(t){
     if(t){b.textContent=t;b.disabled=true}
     else{b.textContent='提交订单';b.disabled=false}
