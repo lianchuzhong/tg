@@ -262,7 +262,7 @@ h1{font-size:1.5rem}
   </div>
   <div id="shQrImgBox" style="display:none;margin-top:14px">
     <img class="qr-img" id="shQrImg" alt="产品分享二维码">
-    <div class="sh-qr-tip">长按图片可保存到手机，顾客用微信「扫一扫」就能<b>直接进入下单页面</b>。</div>
+    <div class="sh-qr-tip">长按图片可保存到手机，顾客用微信「扫一扫」就能<b>直接进入产品详情页</b>。</div>
     <div class="sh-qr-btns"><button onclick="shQrSave()">保存二维码图片</button></div>
   </div>
 </div>
@@ -512,7 +512,7 @@ return '¥'+p.price+'/'+(p.unit||'份')
 
 /* ==================== 单款产品二维码 ====================
    在「分享产品」弹窗里，把专属分享链接在浏览器本地画成二维码海报。
-   顾客微信扫一扫 → 打开本页并自动选中该产品、直接进入下单表单。
+   顾客微信扫一扫 → 打开本页后直接进入该产品详情页。
    纯本地计算：不联网、不调用任何外部二维码接口、不上传任何数据。 */
 var QR=(function(){
 var E=new Array(512),L=new Array(256),i;
@@ -754,7 +754,7 @@ ctx.fillStyle='#000';
 for(var r=0;r<m.length;r++)for(var c=0;c<m.length;c++)if(m[r][c])ctx.fillRect(ox+(c+qz)*cell,y+(r+qz)*cell,cell,cell);
 y+=qw+40;
 ctx.fillStyle='#2d3436';ctx.font='bold 19px '+pf;
-ctx.fillText('微信扫一扫 · 直接进入下单页面',W/2,y);
+ctx.fillText('微信扫一扫 · 直接进入产品详情页',W/2,y);
 y+=32;
 ctx.fillStyle='#b2bec3';ctx.font='13px '+pf;
 var sn=(''+u).replace(/^https?:\/\//,'');
@@ -805,9 +805,9 @@ function prodName(id){
 var p=prodById(id);
 return p?String(p.name).replace(/[\\/:*?"<>|]/g,''):'产品'
 }
-/* ==================== 扫码直达下单 ====================
+/* ==================== 扫码直达详情 ====================
    顾客扫某款产品的二维码进来（链接带 ?p=产品id）时：
-   自动把该产品选中并加入预订车，然后直接打开下单表单。 */
+   直接打开该产品的详情页，不再自动加购、也不弹下单表单。 */
 function qrLand(){
 var pid='';
 try{pid=new URLSearchParams(location.search).get('p')||''}catch(e){}
@@ -822,38 +822,13 @@ var qb=document.getElementById('qbox');
 if(qb)qb.value='';
 buildCats();
 renderProducts();
-if(p.tiers&&p.tiers.length)TIER[id]=0;
-var qe=document.getElementById('q'+id);
-if(qe)qe.textContent=1;
-qrAddQuiet(id);
 QRID=id;
 var b=document.getElementById('qrbanner');
 if(b){
-document.getElementById('qbtxt').innerHTML='已按二维码为您预选「<b>'+escTxt(p.name)+'</b>」×1，填好收货信息即可提交订单。';
+document.getElementById('qbtxt').innerHTML='已按二维码为您打开「<b>'+escTxt(p.name)+'</b>」的产品详情页。';
 b.className='show'
 }
-setTimeout(function(){
-var fp=document.getElementById('fpanel');
-if(fp){
-fp.classList.add('show');
-if(fp.scrollIntoView)fp.scrollIntoView({behavior:'smooth',block:'end'})
-}
-},500)
-}
-function qrAddQuiet(id){
-var p=prodById(id);
-if(!p)return;
-var nm=p.name,pr=p.price,cid=id;
-if(p.tiers&&p.tiers.length){
-var ti=TIER[id]==null?0:TIER[id];
-pr=p.tiers[ti].price;
-nm=p.name+'·'+p.tiers[ti].name;
-cid=id+'_'+ti
-}
-for(var i=0;i<C.length;i++)if(C[i].id===cid){C[i].q+=1;save();draw();return}
-C.push({id:cid,name:nm,price:pr,q:1});
-save();
-draw()
+openDetail(id);
 }
 function qbDetail(){
 if(QRID>=0)openDetail(QRID)
