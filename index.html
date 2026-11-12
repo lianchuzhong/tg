@@ -17,7 +17,7 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 .product{background:#fff;border-radius:10px;padding:20px;box-shadow:0 5px 15px rgba(0,0,0,.1);text-align:center;display:flex;flex-direction:column;position:relative}
 .pin-badge{position:absolute;top:12px;left:12px;background:#e76f51;color:#fff;font-size:.72rem;font-weight:bold;padding:2px 8px;border-radius:6px;z-index:2}
 .product .icon{font-size:3rem;margin-bottom:10px}
-.pimg{width:100%;height:180px;object-fit:cover;border-radius:10px;margin-bottom:8px;cursor:pointer}
+.pimg{width:100%;height:180px;object-fit:contain;background:#f8f8f8;border-radius:10px;margin-bottom:8px;cursor:pointer}
 .pimg.full{height:280px}
 .product .name{font-size:1.15rem;font-weight:bold;margin-bottom:5px;cursor:pointer;color:#2d3436}
 .product .name:hover{color:#e76f51}
@@ -105,14 +105,17 @@ h2{color:#2d3436;margin:20px 0;text-align:center}
 #dm-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px}
 #dm-modal.show{display:flex}
 .dm-box{background:#fff;border-radius:12px;max-width:560px;width:100%;max-height:92vh;overflow:auto;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.4)}
-.dm-box img.dm-hero{width:100%;max-height:300px;object-fit:cover;border-radius:10px}
+.dm-box img.dm-hero{width:100%;height:auto;object-fit:contain;background:#f8f8f8;border-radius:10px;cursor:zoom-in}
 .dm-head{text-align:center;margin-bottom:14px}
 .dm-head .dm-name{font-size:1.4rem;font-weight:bold;color:#2d3436}
 .dm-head .dm-price{color:#e76f51;font-weight:bold;font-size:1.2rem;margin-top:2px}
 .dsec{margin-bottom:18px}
 .dsec h3{color:#8B4513;font-size:1.1rem;margin-bottom:8px;border-left:4px solid #e76f51;padding-left:10px}
 .dsec p{color:#636e72;font-size:.93rem;line-height:1.9}
-.dsec img{width:100%;max-height:260px;object-fit:cover;border-radius:8px;margin:6px 0}
+.dsec img{width:100%;height:auto;object-fit:contain;background:#f8f8f8;border-radius:8px;margin:6px 0;cursor:zoom-in}
+#imgview{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:5000;display:none;align-items:center;justify-content:center;cursor:zoom-out;padding:12px}
+#imgview.show{display:flex}
+#imgview img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;border-radius:6px}
 .dlist{margin-top:6px;padding-left:0;list-style:none}
 .dlist li{padding:6px 0 6px 22px;position:relative;color:#636e72;font-size:.93rem;border-bottom:1px dashed #f0f0f0}
 .dlist li:before{content:'✓';position:absolute;left:0;color:#27ae60;font-weight:bold}
@@ -231,6 +234,7 @@ h1{font-size:1.5rem}
 <div id="fsm" class="fmsg"></div>
 </form>
 </div>
+<div id="imgview" onclick="this.classList.remove('show')"><img id="ivimg" alt="大图查看"></div>
 <div id="oc-modal">
 <div class="oc-box">
 <h3>订单提交成功</h3>
@@ -999,14 +1003,14 @@ if(!p)return;
 var pn=p.name||'';
 var hero='';
 if(p.video)hero='<video class="dm-hero" src="'+escTxt(p.video)+'" controls preload="metadata"></video>';
-else if(p.img)hero='<img class="dm-hero" src="'+escTxt(p.img)+'" alt="'+escTxt(pn)+'">';
+else if(p.img)hero='<img class="dm-hero" src="'+escTxt(p.img)+'" alt="'+escTxt(pn)+'" onclick="ivOpen(this.src)">';
 else if(p.icon&&p.icon.indexOf('.')>-1)hero='<img class="dm-hero" src="'+escTxt(p.icon)+'" alt="'+escTxt(pn)+'">';
 var sec='';
 if(p.detail&&p.detail.length){
 for(var i=0;i<p.detail.length;i++){
 var s=p.detail[i];
 sec+='<div class="dsec"><h3>'+escTxt(s.h||'')+'</h3>';
-if(s.img)sec+='<img src="'+escTxt(s.img)+'" alt="'+escTxt(s.h||'')+'">';
+if(s.img)sec+='<img src="'+escTxt(s.img)+'" alt="'+escTxt(s.h||'')+'" onclick="ivOpen(this.src)">';
 if(s.p)sec+='<p>'+escTxt(s.p).replace(/\n/g,'<br>')+'</p>';
 if(s.list&&s.list.length){sec+='<ul class="dlist">';for(var k=0;k<s.list.length;k++)sec+='<li>'+escTxt(s.list[k])+'</li>';sec+='</ul>'}
 sec+='</div>';
@@ -1029,6 +1033,8 @@ document.getElementById('dm-modal').classList.add('show');
 }
 
 function closeDm(){document.getElementById('dm-modal').classList.remove('show')}
+
+function ivOpen(src){var v=document.getElementById('imgview');if(!v)return;document.getElementById('ivimg').src=src;v.classList.add('show')}
 
 function sel(id,d){S[id]=(S[id]||0)+d;if(S[id]<0)S[id]=0;var el=document.getElementById('q'+id);if(el)el.textContent=S[id]}
 
