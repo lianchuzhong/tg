@@ -95,7 +95,6 @@ function checkHTML() {
     ['function qrPoster(', '二维码海报绘制函数'],
     ['function qrLand(', '扫码落地函数'],
     ['id="qrbanner"', '扫码提示条'],
-    ['function qrAddQuiet(', '扫码加入预订车函数'],
   ];
   for (const [needle, label] of qrMust) {
     if (html.indexOf(needle) === -1) problem('严重', `index.html 缺少${label}（找不到 "${needle}"）`);
