@@ -157,6 +157,7 @@ h1{font-size:1.5rem}
 .cattab{background:#fff;border:2px solid #ddd;border-radius:20px;padding:6px 18px;font-size:.95rem;cursor:pointer;color:#2c3e50;font-weight:600;line-height:1.4}
 .cattab:hover{border-color:#e76f51;color:#e76f51}
 .cattab.on{background:#e76f51;border-color:#e76f51;color:#fff}
+#catmore{display:none;cursor:pointer;color:#2980b9;font-size:.88rem;text-align:center;margin:-14px 0 20px}
 .tiers{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0 10px}
 .tier{flex:1 1 0;min-width:0;background:#fff;border:1.5px solid #ddd;border-radius:8px;padding:5px 2px;font-size:.8rem;cursor:pointer;color:#2c3e50;line-height:1.35;text-align:center}
 .tier:hover{border-color:#e76f51}
@@ -299,6 +300,7 @@ h1{font-size:1.5rem}
 <h2>选择产品</h2>
 <input type="search" id="qbox" class="sbox" placeholder="🔍 搜索产品名称 / 特点" oninput="onSearch(this.value)">
 <div class="catbar" id="catbar"></div>
+<div id="catmore" onclick="catToggle()"></div>
 <div class="products" id="plist"></div>
 
 <div class="cart">
@@ -825,6 +827,7 @@ KW='';
 var qb=document.getElementById('qbox');
 if(qb)qb.value='';
 buildCats();
+catOpen();
 renderProducts();
 QRID=id;
 var b=document.getElementById('qrbanner');
@@ -1379,9 +1382,35 @@ var c=CATS[i];
 h+='<button class="cattab'+(CAT===(c.id||'')?' on':'')+'" onclick="setCat(\''+escA(c.id)+'\')">'+escTxt(c.name||c.id)+'</button>';
 }
 el.innerHTML=h;
+catApply();
 }
 
 function setCat(id){CAT=id;buildCats();renderProducts();}
+
+function catApply(){
+var c=document.getElementById('catbar'),m=document.getElementById('catmore');
+if(!c||!m)return;
+var b=c.getElementsByTagName('button')[0];
+var maxH=(b?b.offsetHeight:37)*2+10;
+c.style.overflow='hidden';
+c.style.maxHeight=maxH+'px';
+var need=c.scrollHeight>c.clientHeight+2;
+var open=c.getAttribute('data-open')==='1';
+if(open)c.style.maxHeight='none';
+m.style.display=need?'block':'none';
+if(need)m.textContent=open?'收起分类 ▴':'更多分类 ▾（共'+(CATS.length+1)+'个）';
+}
+function catToggle(){
+var c=document.getElementById('catbar');
+if(!c)return;
+c.setAttribute('data-open',c.getAttribute('data-open')==='1'?'0':'1');
+catApply();
+}
+function catOpen(){
+var c=document.getElementById('catbar');
+if(c)c.setAttribute('data-open','1');
+catApply();
+}
 
 function onSearch(v){
 KW=(v||'').trim().toLowerCase();
